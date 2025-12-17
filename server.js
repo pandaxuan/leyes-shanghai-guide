@@ -33,6 +33,21 @@ const port = 3000;
 app.use(cors()); // 允许跨域请求
 app.use(express.json()); // 解析 JSON 格式的请求体
 
+// 1. 告诉 Node.js 你的 HTML 文件在哪里
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 2. 设置静态资源目录 (让浏览器能找到你的 HTML/图片/CSS)
+app.use(express.static(__dirname)); 
+
+// 3. 当用户访问 域名/ 时，返回 index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // ----------------------------------------------------
 // 3. API 路由 (实现流式传输)
 // ----------------------------------------------------
