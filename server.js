@@ -1,0 +1,119 @@
+// server.js - 使用 DeepSeek AI (OpenAI SDK) 实现流式传输 (Server-Sent Events)
+
+import express from 'express';
+import cors from 'cors';
+import * as dotenv from 'dotenv';
+import { OpenAI } from 'openai'; 
+
+// ----------------------------------------------------
+// 1. 配置和初始化
+// ----------------------------------------------------
+dotenv.config();
+
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+
+if (!DEEPSEEK_API_KEY || DEEPSEEK_API_KEY.startsWith("sk-") === false) {
+  console.error("❌ 错误：请在 .env 文件中配置有效的 DEEPSEEK_API_KEY (应以 sk- 开头)。");
+  process.exit(1);
+}
+
+// 初始化 DeepSeek AI 实例
+const ai = new OpenAI({ 
+  apiKey: DEEPSEEK_API_KEY, 
+  baseURL: "https://api.deepseek.com/v1" // DeepSeek 的 API Base URL
+});
+
+// ----------------------------------------------------
+// 2. Express 服务器配置
+// ----------------------------------------------------
+const app = express();
+const port = 3000;
+
+// 配置中间件
+app.use(cors()); // 允许跨域请求
+app.use(express.json()); // 解析 JSON 格式的请求体
+
+// ----------------------------------------------------
+// 3. API 路由 (实现流式传输)
+// ----------------------------------------------------
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message, language } = req.body;
+
+    if (!message || !language) {
+      // 流式错误处理：发送 JSON 错误响应
+      return res.status(400).json({ 
+        success: false, 
+        error: "请求参数错误：缺少 'message' 或 'language'。" 
+      });
+    }
+    
+    const systemInstruction = `您是 Leyes AI，一位专注于上海美食的专业本地旅游向导。您的目标是根据用户的查询提供有帮助、热情且准确的推荐。始终使用请求的语言回复：${language}。`;
+
+    // 🌟 设置响应头以启用 Server-Sent Events (SSE) 流式传输 🌟
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    });
+
+    // 调用 DeepSeek API，启用流式传输
+    const stream = await ai.chat.completions.create({
+        model: "deepseek-chat", // DeepSeek 的聊天模型
+        messages: [
+            { role: "system", content: systemInstruction },
+            { role: "user", content: message },
+        ],
+        temperature: 0.6, // 略微降低温度以提高生成速度和稳定性
+        max_tokens: 768,  // 限制最大回复长度
+        stream: true,     // 启用流式传输
+    });
+
+    // 遍历 DeepSeek 返回的流
+    for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || "";
+        
+        if (content) {
+            // 将 AI 返回的内容封装成 SSE 格式 (data: content\n\n)
+            res.write(`data: ${JSON.stringify({ text: content })}\n\n`);
+        }
+    }
+
+    // 流结束：发送一个特殊的 'end' 标记给前端
+    res.write(`data: ${JSON.stringify({ end: true })}\n\n`);
+    res.end(); // 结束 HTTP 响应流
+
+  } catch (error) {
+    // 强制打印底层错误
+    console.error('--- 🚨 原始 AI API 错误详情 🚨 ---');
+    console.error(error); 
+    console.error('------------------------------------');
+
+    // 检查是否为 API 错误 (例如 402 Insufficient Balance)
+    const errorMsg = error.message || "AI 模型调用失败，请检查 API 密钥和余额。";
+    
+    // 错误处理：发送一个错误 JSON 块给前端，然后关闭连接
+    if (!res.headersSent) {
+      res.writeHead(500, {
+        'Content-Type': 'application/json'
+      });
+      res.end(JSON.stringify({ 
+        success: false, 
+        error: errorMsg
+      }));
+    } else {
+      // 如果流已经开始，发送一个错误标记
+      res.write(`data: ${JSON.stringify({ error: errorMsg })}\n\n`);
+      res.end();
+    }
+  }
+});
+
+// ----------------------------------------------------
+// 4. 启动服务器
+// ----------------------------------------------------
+app.listen(port, () => {
+  console.log(`✅ Leyes AI 流式中转服务启动成功! 监听端口: http://localhost:${port}`);
+  console.log("   请确保您的前端 (index.html) 已更新为流式处理逻辑。");
+});
