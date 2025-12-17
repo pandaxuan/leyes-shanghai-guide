@@ -7,23 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* CSS 动画和样式（保持不变）*/
         @keyframes slideUp {
             from { transform: translateY(100px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
         .animate-slide-up { animation: slideUp 0.8s ease-out forwards; }
 
-        /* 隐藏滚动条 */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* 顶部 Banner 样式 */
         #top-save-prompt {
             position: sticky;
             top: 0; 
@@ -32,12 +24,8 @@
             transform: translateY(-100%); 
             opacity: 0;
         }
-        .show-prompt {
-            transform: translateY(0) !important;
-            opacity: 1 !important;
-        }
+        .show-prompt { transform: translateY(0) !important; opacity: 1 !important; }
 
-        /* 核心修改 1：固定输入区域在底部 */
         #chat-input-area-fixed {
             position: fixed;
             bottom: 0;
@@ -49,10 +37,18 @@
             box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.05); 
         }
         
-        /* 核心修改 2：给聊天记录添加底部填充以避免遮挡 */
         #chat-history {
             padding-bottom: 112px; 
-            height: 400px; 
+            /* 移除固定高度，改用 flex 增长或配合 main 布局 */
+            min-height: 400px;
+        }
+
+        /* 标签栏吸附效果优化 */
+        .tabs-container {
+            position: sticky;
+            top: 108px; /* 紧跟在 nav 后面 */
+            background: #f8fafc;
+            z-index: 45;
         }
     </style>
 </head>
@@ -86,16 +82,8 @@
         </div>
     </nav>
 
-    <header class="px-6 pt-12 text-center max-w-3xl mx-auto">
-        <h2 class="text-4xl font-extrabold leading-tight tracking-tight" data-key="header_title_1">
-            上海美食指南 <br/>
-            <span class="text-blue-600 underline decoration-wavy decoration-blue-200" data-key="header_title_2">问问本地AI。</span>
-        </h2>
-        <p class="text-lg text-slate-600 mt-2" data-key="header_subtitle">获取个性化推荐或浏览我们的精选合集。</p>
-    </header>
-
-    <main class="max-w-5xl mx-auto pt-8">
-        <div class="flex border-b border-slate-200 px-6 sticky top-[158px] bg-slate-50 z-40">
+    <main class="max-w-5xl mx-auto">
+        <div class="tabs-container flex border-b border-slate-200 px-6">
             <button id="tab-ai" onclick="switchTab('ai')" 
                     class="tab-button py-3 px-6 text-lg font-bold transition-colors border-b-4 border-blue-600 text-blue-600">
                 <i data-lucide="message-square" class="w-5 h-5 inline-block mr-2"></i><span data-key="tab_ai">AI 推荐</span>
@@ -107,9 +95,7 @@
         </div>
 
         <div id="tab-content" class="px-6 py-8">
-            
             <div id="content-ai" class="tab-content max-w-2xl mx-auto">
-                
                 <div id="welcome-message-container" class="bg-white rounded-3xl shadow-xl p-6 mb-8 border border-slate-100">
                     <div class="flex items-center gap-4 mb-4">
                         <div class="bg-blue-600 p-2 rounded-xl">
@@ -117,15 +103,15 @@
                         </div>
                         <h3 class="text-2xl font-black" data-key="ai_chat_title">Leyes AI 聊天</h3>
                     </div>
-                    <p class="text-slate-600" data-key="ai_chat_greeting">您好！我是您在上海的美食向导AI。告诉我您想吃什么：</p>
-                    <ul class="text-sm text-slate-500 list-disc list-inside mt-2 space-y-1">
-                        <li data-key="ai_chat_tip_1">"我想在外滩附近找便宜的街头小吃。"</li>
-                        <li data-key="ai_chat_tip_2">"推荐一个法租界浪漫的晚餐地点。"</li>
-                        <li data-key="ai_chat_tip_3">"哪里可以找到最好吃的小笼包？"</li>
-                    </ul>
+                    <p class="text-slate-600" data-key="ai_chat_greeting">您好！我是您在上海的美食向导AI。</p>
                 </div>
-                
-                <div id="chat-history" class="h-[400px] overflow-y-auto no-scrollbar space-y-6">
+
+                <div id="loading-animation-container" class="hidden flex flex-col items-center justify-center py-10">
+                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHp1eHNwZXB3Y2F5dHFqNHJhcG1xcGF5eG84ZDVnbGZ2bjY0Z3RzaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKMGpxxS0D9N6uI/giphy.gif" class="w-24 h-24 rounded-full mb-4 shadow-lg">
+                    <p class="text-blue-600 font-bold animate-pulse text-sm">正在为您搜罗上海美味...</p>
+                </div>
+
+                <div id="chat-history" class="overflow-y-auto no-scrollbar space-y-6">
                 </div>
             </div>
 
@@ -136,14 +122,14 @@
         </div>
     </main>
     
-    <div id="chat-input-area-fixed" class="hidden">
+    <div id="chat-input-area-fixed" class="">
         <div class="max-w-5xl mx-auto px-6">
             <div class="max-w-2xl mx-auto">
                 <form id="chat-form" class="flex gap-4">
                     <input type="text" id="user-input" data-key-placeholder="input_placeholder" 
-                           placeholder="在此输入您的请求 (例如：“酒店附近的最佳面馆”)" 
-                           class="flex-grow p-4 rounded-full border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-md" required>
-                    <button type="submit" class="bg-blue-600 text-white p-4 rounded-full font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">
+                           placeholder="输入请求..." 
+                           class="flex-grow p-4 rounded-full border border-slate-300 focus:ring-2 focus:ring-blue-500 shadow-md outline-none">
+                    <button type="submit" class="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all">
                         <i data-lucide="send" class="w-6 h-6"></i>
                     </button>
                 </form>
@@ -153,449 +139,196 @@
 
     <div id="instructions-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-white w-full max-w-sm rounded-[3rem] p-8 relative">
-            <button onclick="toggleInstructions(false)" class="absolute top-6 right-6 text-slate-400">
-                <i data-lucide="x"></i>
-            </button>
-            
+            <button onclick="toggleInstructions(false)" class="absolute top-6 right-6 text-slate-400"><i data-lucide="x"></i></button>
             <div class="text-center mb-8">
-                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="download" class="text-blue-600 w-8 h-8"></i>
-                </div>
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="download" class="text-blue-600 w-8 h-8"></i></div>
                 <h3 class="text-2xl font-black" data-key="how_to_title">Add to Home Screen</h3>
-                <p class="text-slate-500 text-sm mt-2" data-key="how_to_subtitle">Keep your local guide handy.</p>
             </div>
-            
-            <div class="space-y-6 mb-8">
-                <div class="flex gap-4 items-start">
-                    <div class="bg-slate-900 text-white w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold">1</div>
-                    <p class="text-slate-600 text-sm" data-key="how_to_step_1">Tap the <span class='font-bold text-slate-900 underline italic'>Share button</span> (iOS) or the <span class='font-bold text-slate-900 underline'>Menu icon</span> (Android)。</p>
-                </div>
-                <div class="flex gap-4 items-start">
-                    <div class="bg-slate-900 text-white w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold">2</div>
-                    <p class="text-slate-600 text-sm" data-key="how_to_step_2">Select <span class='font-bold text-slate-900 italic'>"Add to Home Screen"</span> from the options。</p>
-                </div>
-            </div>
-
-            <button onclick="toggleInstructions(false)" data-key="how_to_got_it" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-xl shadow-blue-200 active:scale-95 transition-all">
-                GOT IT!
-            </button>
+            <button onclick="toggleInstructions(false)" data-key="how_to_got_it" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-xl active:scale-95 transition-all">GOT IT!</button>
         </div>
     </div>
 
     <script>
-        // === 语言数据对象 (i18n) ===
+        // === 语言与数据 (保持不变) ===
         const translations = {
-            zh: {
-                nav_subtitle: "本地知情者",
-                header_title_1: "上海美食指南",
-                header_title_2: "问问本地AI。",
-                header_subtitle: "获取个性化推荐或浏览我们的精选合集。",
-                tab_ai: "AI 推荐",
-                tab_guides: "攻略合集",
-                ai_chat_title: "Leyes AI 聊天",
-                ai_chat_greeting: "您好！我是您在上海的美食向导AI。告诉我您想吃什么：",
-                ai_chat_tip_1: "“我想在外滩附近找便宜的街头小吃。”",
-                ai_chat_tip_2: "“推荐一个法租界浪漫的晚餐地点。”",
-                ai_chat_tip_3: "“哪里可以找到最好吃的小笼包？”",
-                input_placeholder: "在此输入您的请求 (例如：“酒店附近的最佳面馆”)",
-                save_prompt_title: "保存 Leyes 到桌面",
-                save_prompt_subtitle: "一键访问，轻松旅行",
-                save_prompt_button: "如何操作？",
-                how_to_title: "添加到主屏幕",
-                how_to_subtitle: "让您的本地向导随时可用。",
-                how_to_step_1: "点击 <span class='font-bold text-slate-900 underline italic'>分享按钮</span> (iOS) 或 <span class='font-bold text-slate-900 underline'>菜单图标</span> (Android)。",
-                how_to_step_2: "从选项中选择 <span class='font-bold text-slate-900 italic'>“添加到主屏幕”</span>。",
-                how_to_got_it: "明白了！"
-            },
-            en: {
-                nav_subtitle: "Local Insider",
-                header_title_1: "Shanghai Food Guide",
-                header_title_2: "Just ask the Local AI.",
-                header_subtitle: "Get personalized recommendations or browse our curated collections.",
-                tab_ai: "AI Recommender",
-                tab_guides: "Curated Guides",
-                ai_chat_title: "Leyes AI Chat",
-                ai_chat_greeting: "Hello! I'm your local guide AI for Shanghai cuisine. Tell me what you're craving:",
-                ai_chat_tip_1: "\"I want cheap street food near the Bund.\"",
-                ai_chat_tip_2: "\"Recommend a romantic dinner place in the French Concession.\"",
-                ai_chat_tip_3: "\"Where can I find the best Xiaolongbao?\"",
-                input_placeholder: "Type your request here (e.g., 'Best noodles near my hotel')",
-                save_prompt_title: "Save Leyes to Desktop",
-                save_prompt_subtitle: "One-tap access for your trip",
-                save_prompt_button: "How?",
-                how_to_title: "Add to Home Screen",
-                how_to_subtitle: "Keep your local guide handy.",
-                how_to_step_1: "Tap the <span class='font-bold text-slate-900 underline italic'>Share button</span> (iOS) or the <span class='font-bold text-slate-900 underline'>Menu icon</span> (Android).",
-                how_to_step_2: "Select <span class='font-bold text-slate-900 italic'>\"Add to Home Screen\"</span> from the options.",
-                how_to_got_it: "GOT IT!"
-            },
-            ja: {
-                nav_subtitle: "ローカルインサイダー",
-                header_title_1: "上海グルメガイド",
-                header_title_2: "AIに尋ねてみましょう。",
-                header_subtitle: "パーソナライズされたおすすめを取得するか、厳選されたコレクションを閲覧してください。",
-                tab_ai: "AIのおすすめ",
-                tab_guides: "厳選ガイド",
-                ai_chat_title: "Leyes AIチャット",
-                ai_chat_greeting: "こんにちは！私は上海グルメのローカルAIガイドです。食べたいものを教えてください：",
-                ai_chat_tip_1: "「バンド近くで安いストリートフードが欲しい。」",
-                ai_chat_tip_2: "「フランス租界のロマンチックなディナー場所を教えて。」",
-                ai_chat_tip_3: "「最高の小籠包はどこで食べられますか？」",
-                input_placeholder: "ここにリクエストを入力してください（例：「ホテル近くのベストな麺屋」）",
-                save_prompt_title: "Leyesをデスクトップに保存",
-                save_prompt_subtitle: "タップ一つでアクセス、旅を簡単に",
-                save_prompt_button: "方法",
-                how_to_title: "ホーム画面に追加",
-                how_to_subtitle: "ローカルガイドを手元に置いておきましょう。",
-                how_to_step_1: " <span class='font-bold text-slate-900 underline italic'>共有ボタン</span> (iOS) または <span class='font-bold text-slate-900 underline'>メニューアイコン</span> (Android) をタップします。",
-                how_to_step_2: "オプションから <span class='font-bold text-slate-900 italic'>「ホーム画面に追加」</span> を選択します。",
-                how_to_got_it: "了解しました！"
-            },
-            ko: {
-                nav_subtitle: "현지 내부자",
-                header_title_1: "상하이 미식 가이드",
-                header_title_2: "현지 AI에게 물어보세요。",
-                header_subtitle: "맞춤 추천을 받거나 엄선된 컬렉션을 탐색하세요。",
-                tab_ai: "AI 추천",
-                tab_guides: "엄선 가이드",
-                ai_chat_title: "Leyes AI 채팅",
-                ai_chat_greeting: "안녕하세요! 저는 상하이 요리를 위한 현지 가이드 AI입니다. 먹고 싶은 것을 알려주세요:",
-                ai_chat_tip_1: "\"와이탄 근처 저렴한 길거리 음식을 원해요.\"",
-                ai_chat_tip_2: "\"프랑스 조계지에서 로맨틱한 저녁 식사 장소를 추천해 주세요.\"",
-                ai_chat_tip_3: "\"최고의 샤오롱바오는 어디서 찾을 수 있나요?\"",
-                input_placeholder: "여기에 요청을 입력하세요 (예: \"호텔 근처 최고의 국수집\")",
-                save_prompt_title: "Leyes를 데스크톱에 저장",
-                save_prompt_subtitle: "원터치 액세스, 여행을 간편하게",
-                save_prompt_button: "방법",
-                how_to_title: "홈 화면에 추가",
-                how_to_subtitle: "현지 가이드를 가까이 두세요。",
-                how_to_step_1: " <span class='font-bold text-slate-900 underline italic'>공유 버튼</span> (iOS) 또는 <span class='font-bold text-slate-900 underline'>메뉴 아이콘</span> (Android)을 탭하세요。",
-                how_to_step_2: "옵션에서 <span class='font-bold text-slate-900 italic'>“홈 화면에 추가”</span>를 선택하세요。",
-                how_to_got_it: "알겠습니다！"
-            }
+            zh: { nav_subtitle: "本地知情者", tab_ai: "AI 推荐", tab_guides: "攻略合集", ai_chat_title: "Leyes AI 聊天", ai_chat_greeting: "您好！我是您在上海的美食向导AI。告诉我您想吃什么：", input_placeholder: "在此输入您的请求 (例如：“酒店附近的最佳面馆”)", save_prompt_title: "保存 Leyes 到桌面", save_prompt_subtitle: "一键访问，轻松旅行", save_prompt_button: "如何操作？", how_to_title: "添加到主屏幕", how_to_got_it: "明白了！" },
+            en: { nav_subtitle: "Local Insider", tab_ai: "AI Recommender", tab_guides: "Curated Guides", ai_chat_title: "Leyes AI Chat", ai_chat_greeting: "Hello! I'm your local guide AI for Shanghai cuisine. Tell me what you're craving:", input_placeholder: "Type your request here (e.g., 'Best noodles near my hotel')", save_prompt_title: "Save Leyes to Desktop", save_prompt_subtitle: "One-tap access for your trip", save_prompt_button: "How?", how_to_title: "Add to Home Screen", how_to_got_it: "GOT IT!" },
+            ja: { nav_subtitle: "ローカルインサイダー", tab_ai: "AIのおすすめ", tab_guides: "厳選ガイド", ai_chat_title: "Leyes AIチャット", ai_chat_greeting: "こんにちは！私は上海グルメのローカルAIガイドです。食べたいものを教えてください：", input_placeholder: "ここにリクエストを入力してください", save_prompt_title: "Leyesをデスクトップに保存", save_prompt_subtitle: "タップ一つでアクセス", save_prompt_button: "方法", how_to_title: "ホーム画面に追加", how_to_got_it: "了解しました！" },
+            ko: { nav_subtitle: "현지 내부자", tab_ai: "AI 추천", tab_guides: "엄선 가이드", ai_chat_title: "Leyes AI 채팅", ai_chat_greeting: "안녕하세요! 상하이 미식 가이드 AI입니다. 먹고 싶은 것을 알려주세요:", input_placeholder: "여기에 요청을 입력하세요", save_prompt_title: "Leyes를 데스크톱에 저장", save_prompt_subtitle: "원터치 액세스", save_prompt_button: "방법", how_to_title: "홈 화면에 추가", how_to_got_it: "알겠습니다！" }
         };
-        let currentLang = 'zh'; 
+        let currentLang = 'zh';
 
-        // === 攻略卡片数据 (用于 Tab 2) ===
         const guidesData = [
-            {
-                id: 'food_noodles',
-                name: { zh: "老上海的十碗面", en: "Ten Classic Shanghai Noodles", ja: "上海の伝統的な麺料理10選", ko: "상하이 10대 전통 국수" },
-                category: { zh: "本地经典", en: "Local Classics", ja: "ローカル名物", ko: "현지 클래식" },
-                description: { 
-                    zh: "精选十家本地人从小吃到大的面馆，一口入魂。", 
-                    en: "Ten noodle shops locals swear by, offering a taste of authentic Shanghai.",
-                    ja: "地元民が愛する面屋10選。魂を揺さぶる一杯。",
-                    ko: "현지인들이 어릴 때부터 먹어온 국수집 10곳。 한 입에 감동을 선사합니다。" 
-                },
-                image: "https://images.unsplash.com/photo-1547372076-4d0092306915?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNTkyOTN8MHwxfHNlYXJjaHwyM3x8c2hhbmdoYWklMjBub29kbGVzfGVufDB8fHx8MTY3ODkzMDExM3ww&ixlib=rb-4.0.3&q=80&w=400",
-                color: "bg-red-600",
-                colorLight: "bg-red-100",
-            },
-            {
-                id: 'food_cafe',
-                name: { zh: "法租界咖啡地图", en: "French Concession Cafe Map", ja: "フランス租界カフェマップ", ko: "프랑스 조계지 카페 지도" },
-                category: { zh: "咖啡指南", en: "Cafe Guide", ja: "カフェガイド", ko: "카페 가이드" },
-                description: { 
-                    zh: "梧桐树下的精品咖啡店，享受优雅的午后时光。", 
-                    en: "Boutique cafes under the parasol trees, perfect for a relaxing afternoon.",
-                    ja: "プラタナスの木陰にあるおしゃれなカフェで優雅な午後を。",
-                    ko: "플라타너스 나무 아래 부티크 카페에서 우아한 오후를 즐기세요。" 
-                },
-                image: "https://images.unsplash.com/photo-1596707325257-25e1740b2f5b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNTkyOTN8MHwxfHNlYXJjaHwyMHx8Y29mZmVlJTIwc2hhbmdoYWl8ZW58MHx8fHx8MTY3ODkzMDExM3ww&ixlib=rb-4.0.3&q=80&w=400",
-                color: "bg-amber-600",
-                colorLight: "bg-amber-100",
-            }
-            // 更多攻略可以在这里添加
+            { id: 'food_noodles', name: { zh: "老上海的十碗面", en: "Ten Classic Shanghai Noodles", ja: "上海の伝統的な麺料理10選", ko: "상하이 10대 전통 국수" }, category: { zh: "本地经典", en: "Local Classics", ja: "ローカル名物", ko: "현지 클래식" }, description: { zh: "精选十家本地人从小吃到大的面馆，一口入魂。", en: "Ten noodle shops locals swear by.", ja: "地元民が愛する面屋10選。", ko: "현지인들의 맛집 10곳。" }, image: "https://images.unsplash.com/photo-1547372076-4d0092306915?w=400", color: "bg-red-600", colorLight: "bg-red-100" },
+            { id: 'food_cafe', name: { zh: "法租界咖啡地图", en: "French Concession Cafe Map", ja: "フランス租界カフェマップ", ko: "프랑스 조계지 카페 지도" }, category: { zh: "咖啡指南", en: "Cafe Guide", ja: "カフェガイド", ko: "카페 가이드" }, description: { zh: "梧桐树下的精品咖啡店，享受优雅的午后时光。", en: "Boutique cafes under the parasol trees.", ja: "おしゃれなカフェで優雅な午後を。", ko: "플라타너스 나무 아래 부티크 카페。" }, image: "https://images.unsplash.com/photo-1596707325257-25e1740b2f5b?w=400", color: "bg-amber-600", colorLight: "bg-amber-100" }
         ];
 
+        // === 核心逻辑修改 ===
 
-        // === 核心函数 ===
-        
         function setLanguage(lang) {
             currentLang = lang;
-            const currentTrans = translations[lang];
-
-            localStorage.setItem('leyesLang', lang); 
-
             document.querySelectorAll('[data-key]').forEach(el => {
                 const key = el.getAttribute('data-key');
-                if (currentTrans[key]) {
-                    el.innerHTML = currentTrans[key];
-                }
+                if (translations[lang][key]) el.innerHTML = translations[lang][key];
             });
-
             document.querySelectorAll('[data-key-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-key-placeholder');
-                if (currentTrans[key]) {
-                    el.placeholder = currentTrans[key];
-                }
+                if (translations[lang][key]) el.placeholder = translations[lang][key];
             });
-            
-            renderGuides(); 
-            
-            document.getElementById('lang-selector').value = lang;
-            
-            const greetingElement = document.querySelector('[data-key="ai_chat_greeting"]');
-            if (greetingElement) {
-                greetingElement.innerHTML = translations[currentLang].ai_chat_greeting;
-            }
+            renderGuides();
         }
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-button').forEach(el => {
-                el.classList.remove('border-blue-600', 'text-blue-600');
-                el.classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700');
-            });
-
-            const inputArea = document.getElementById('chat-input-area-fixed'); 
-
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('border-blue-600', 'text-blue-600'));
+            
             document.getElementById(`content-${tabName}`).classList.remove('hidden');
-            const activeTabButton = document.getElementById(`tab-${tabName}`);
-            activeTabButton.classList.add('border-blue-600', 'text-blue-600');
-            activeTabButton.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700');
+            document.getElementById(`tab-${tabName}`).classList.add('border-blue-600', 'text-blue-600');
             
-            if (tabName === 'ai') {
-                inputArea.classList.remove('hidden');
-            } else {
-                inputArea.classList.add('hidden');
-            }
+            document.getElementById('chat-input-area-fixed').style.display = (tabName === 'ai' ? 'block' : 'none');
         }
 
-        function generateGuideCard(guide) {
-            const link = `#`; 
-            const currentTrans = translations[currentLang];
-
-            return `
-                <a href="${link}" class="group bg-white rounded-3xl shadow-lg p-6 flex flex-col md:flex-row gap-6 border border-slate-100 hover:shadow-xl transition-shadow duration-300 active:scale-[0.99]">
-                    <img src="${guide.image}" alt="${guide.name[currentLang]}" class="w-full md:w-64 h-48 md:h-64 object-cover rounded-2xl flex-shrink-0 transition-transform group-hover:scale-[1.02] duration-500">
-                    <div class="flex flex-col justify-between">
-                        <div>
-                            <span class="text-xs font-bold ${guide.color.replace('bg-', 'text-')} uppercase tracking-widest ${guide.colorLight} px-3 py-1 rounded-full">${guide.category[currentLang]}</span>
-                            <h4 class="text-2xl font-black mt-2">${guide.name[currentLang]}</h4>
-                            <p class="text-slate-600 mt-1">${guide.description[currentLang]}</p>
-                        </div>
-                        <div class="mt-4">
-                            <span class="inline-flex items-center gap-2 text-blue-600 font-bold">
-                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                                ${currentTrans.tab_guides} 
-                            </span>
-                        </div>
-                    </div>
-                </a>
-            `;
-        }
-
-        function renderGuides() {
-            const container = document.getElementById('guides-container');
-            if (!container) return; 
-
-            container.innerHTML = ''; 
-            
-            guidesData.forEach(guide => {
-                container.insertAdjacentHTML('beforeend', generateGuideCard(guide));
-            });
-
-            lucide.createIcons();
-        }
-
-        function toggleInstructions(show) {
-            const modal = document.getElementById('instructions-modal');
-            if (show) {
-                modal.classList.remove('hidden');
-            } else {
-                modal.classList.add('hidden');
-            }
-        }
-        
-        const chatForm = document.getElementById('chat-form');
-        const userInput = document.getElementById('user-input');
-        const chatHistory = document.getElementById('chat-history');
-        const welcomeContainer = document.getElementById('welcome-message-container');
-
-
-        // 辅助函数：消息气泡生成
         function appendMessage(text, sender, isLoading = false) {
+            const chatHistory = document.getElementById('chat-history');
             const msgDiv = document.createElement('div');
-            const baseClass = 'max-w-[80%] p-4 rounded-xl shadow-md animate-slide-up'; 
+            const baseClass = 'max-w-[80%] p-4 rounded-xl shadow-md animate-slide-up';
             
             if (sender === 'user') {
                 msgDiv.className = `${baseClass} bg-blue-500 text-white ml-auto rounded-br-none`;
                 msgDiv.textContent = text;
-            } else if (sender === 'ai') {
+            } else {
                 msgDiv.className = `${baseClass} bg-white text-slate-800 rounded-tl-none`;
-                if (isLoading) {
-                    msgDiv.innerHTML = '<div class="animate-pulse">...</div>'; 
-                } else {
-                    msgDiv.innerHTML = text; 
-                }
-            } else if (sender === 'error') {
-                msgDiv.className = `${baseClass} bg-red-100 text-red-700 mx-auto`;
-                msgDiv.innerHTML = text;
+                msgDiv.innerHTML = isLoading ? '<div class="animate-pulse">...</div>' : text;
             }
 
             chatHistory.appendChild(msgDiv);
-            chatHistory.scrollTop = chatHistory.scrollHeight; 
-            return msgDiv; 
-        }
-        
-        /**
-         * 格式化 AI 返回的文本，主要处理换行符
-         */
-        function formatAiResponse(text) {
-            // 基础的 Markdown 格式化 (如果 AI 返回粗体，这里会处理)
-            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
-            // 将换行符替换为 <br> 以便在 HTML 中正确显示
-            text = text.replace(/(\r\n|\n\r|\n|\r)/g, '<br>'); 
-            return text;
+            
+            // 🌟 智能滚动：只有当用户本来就在底部时才滚动 🌟
+            const isScrolledToBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
+            if (isScrolledToBottom) {
+                msgDiv.scrollIntoView({ behavior: 'smooth' });
+            }
+            return msgDiv;
         }
 
-        // 🌟🌟 核心修改：实现流式传输处理 🌟🌟
-        // 🌟🌟 修正后的核心修改：实现流式传输处理 🌟🌟
+        function formatAiResponse(text) {
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            return text.replace(/(\r\n|\n\r|\n|\r)/g, '<br>');
+        }
+
         async function streamAiResponse(userMessage) {
-            const aiMessageDiv = appendMessage('...', 'ai', true); 
             const historyElement = document.getElementById('chat-history');
+            const loadingAnim = document.getElementById('loading-animation-container');
             
+            // 1. 显示 5 秒动画
+            loadingAnim.classList.remove('hidden');
+            let animationCleared = false;
+            const animTimer = setTimeout(() => {
+                loadingAnim.classList.add('hidden');
+                animationCleared = true;
+            }, 5000);
+
+            let aiMessageDiv = null;
             let accumulatedText = '';
-            let errorOccurred = false;
-            
-            // 确保在每次新的流式连接前，禁用输入框
-            userInput.disabled = true;
 
             try {
-                // 确保 API_URL 指向您的后端服务
-                const API_URL = '/api/chat'; 
-
-                const response = await fetch(API_URL, { 
+                const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: userMessage, language: currentLang }),
                 });
 
-                if (!response.ok || !response.body) {
-                    // 如果 HTTP 状态码不是 2xx (包括 CORS 错误或 4xx/5xx)
-                    const errorDetails = response.statusText || '连接失败，可能是 CORS 或 HTTP 错误。';
-                    throw new Error(`HTTP Error ${response.status}: ${errorDetails}`);
-                }
+                if (!response.ok) throw new Error('Network error');
 
-                // 2. 启用流式阅读器 (TextDecoder 用于将字节流转换为字符串)
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder("utf-8");
                 let buffer = '';
 
-                // 3. 循环读取数据块
                 while (true) {
                     const { value, done } = await reader.read();
-                    
-                    // 🚨 修复 1：在 done 为 true 时立即中断循环 🚨
-                    if (done) {
-                        break; 
-                    }
-                    
-                    // 🚨 修复 2：确保 value 存在，否则跳过 🚨
-                    if (!value) {
-                        continue;
+                    if (done) break;
+
+                    // 收到数据流即刻停止动画（如果 5 秒还没到）
+                    if (!animationCleared) {
+                        clearTimeout(animTimer);
+                        loadingAnim.classList.add('hidden');
+                        animationCleared = true;
                     }
 
-                    // 解码收到的新数据块
+                    // 第一次收到数据时创建消息气泡
+                    if (!aiMessageDiv) {
+                        aiMessageDiv = appendMessage('', 'ai');
+                    }
+
                     buffer += decoder.decode(value, { stream: true });
                     let lines = buffer.split('\n');
-                    buffer = lines.pop(); // 最后一个可能不完整，放回 buffer
+                    buffer = lines.pop();
 
-                    // 处理完整的 SSE 数据行
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
-                            const data = line.substring(6).trim(); // trim 确保去除空格
-                            if (data.length > 0) {
-                                try {
-                                    const json = JSON.parse(data);
-
-                                    if (json.error) {
-                                        accumulatedText += `错误：${json.error}`;
-                                        errorOccurred = true;
-                                    } else if (json.end) {
-                                        break; 
-                                    } else if (json.text) {
-                                        accumulatedText += json.text;
-                                    }
-                                    
-                                    // 实时更新 AI 消息框的内容
-                                    aiMessageDiv.innerHTML = formatAiResponse(accumulatedText);
-                                    historyElement.scrollTop = historyElement.scrollHeight; 
-
-                                } catch (e) {
-                                    // 忽略无效或不完整的 JSON 块
-                                    continue; 
+                            const data = JSON.parse(line.substring(6));
+                            if (data.text) {
+                                accumulatedText += data.text;
+                                aiMessageDiv.innerHTML = formatAiResponse(accumulatedText);
+                                
+                                // 🌟 接收流时智能滚动 🌟
+                                const isScrolledToBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 150;
+                                if (isScrolledToBottom) {
+                                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' });
                                 }
                             }
                         }
                     }
                 }
-                
-                // 最终清理和格式化
-                aiMessageDiv.innerHTML = formatAiResponse(accumulatedText);
-                if (errorOccurred) {
-                    aiMessageDiv.classList.add('bg-red-100', 'text-red-700');
-                }
-
             } catch (error) {
-                console.error('Stream Fetch error:', error);
-                aiMessageDiv.innerHTML = `网络或服务器错误：无法建立流式连接。请检查您的 Node.js 后端服务是否正在运行在 **http://localhost:3000**。(${error.message})`;
-                aiMessageDiv.classList.add('bg-red-100', 'text-red-700');
+                appendMessage('抱歉，发生了错误。', 'ai');
             } finally {
-                // 确保无论成功或失败，都重新启用输入框
-                userInput.disabled = false;
-                userInput.focus();
+                loadingAnim.classList.add('hidden');
+                document.getElementById('user-input').disabled = false;
+                lucide.createIcons();
             }
         }
-        // 🌟🌟 流式传输处理结束 🌟🌟
-        // 🌟🌟 流式传输处理结束 🌟🌟
 
-        
-        // 表单提交事件处理器 (已修改)
-        chatForm.addEventListener('submit', function(e) {
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const message = userInput.value.trim();
-            if (message) {
-                
-                // 🌟 优化 1: 隐藏欢迎提示框 🌟
-                if (welcomeContainer) {
-                    welcomeContainer.classList.add('hidden');
-                }
-                
-                // 🌟 优化 2: 立即显示用户发送的消息 🌟
-                appendMessage(message, 'user');
-                
-                userInput.value = '';
-                
-                // 🌟 调用流式处理函数 🌟
-                streamAiResponse(message).finally(() => {
-                    // 结束后重新启用输入
-                    userInput.disabled = false;
-                    userInput.focus();
-                });
+            const input = document.getElementById('user-input');
+            const msg = input.value.trim();
+            if (msg) {
+                document.getElementById('welcome-message-container').classList.add('hidden');
+                appendMessage(msg, 'user');
+                input.value = '';
+                input.disabled = true;
+                streamAiResponse(msg);
             }
         });
 
+        function renderGuides() {
+            const container = document.getElementById('guides-container');
+            container.innerHTML = guidesData.map(guide => `
+                <div class="bg-white rounded-3xl shadow-lg p-6 flex flex-col md:flex-row gap-6 border border-slate-100">
+                    <img src="${guide.image}" class="w-full md:w-48 h-48 object-cover rounded-2xl flex-shrink-0">
+                    <div>
+                        <span class="text-xs font-bold ${guide.color.replace('bg-', 'text-')} px-3 py-1 rounded-full ${guide.colorLight}">${guide.category[currentLang]}</span>
+                        <h4 class="text-2xl font-black mt-2">${guide.name[currentLang]}</h4>
+                        <p class="text-slate-600 mt-1">${guide.description[currentLang]}</p>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
 
-        // 页面加载和初始化 (读取 localStorage, 显示顶部 Banner)
+        function toggleInstructions(show) {
+            document.getElementById('instructions-modal').classList.toggle('hidden', !show);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            const savedLang = localStorage.getItem('leyesLang') || 'zh'; 
-            currentLang = savedLang; 
-            
-            setLanguage(currentLang); 
+            setLanguage('zh');
             switchTab('ai');
-
             setTimeout(() => {
-                const prompt = document.getElementById('top-save-prompt');
                 if (!window.matchMedia('(display-mode: standalone)').matches) {
-                    prompt.classList.add('show-prompt');
-                    prompt.classList.remove('pointer-events-none');
+                    document.getElementById('top-save-prompt').classList.add('show-prompt');
                 }
             }, 2000);
-            
-            lucide.createIcons();
         });
     </script>
 </body>
