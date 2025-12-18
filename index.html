@@ -66,8 +66,6 @@
     </div>
 
     <script>
-        // --- 请在此处填入你的 Render 后端地址 ---
-        // 必须加上 https://
         const BACKEND_URL = 'https://leyes-shanghai-guide.onrender.com';
 
         let scene, camera, renderer, particles, mouse = new THREE.Vector2(), targetMouse = new THREE.Vector2();
@@ -157,11 +155,11 @@
             renderer.render(scene, camera);
         }
 
-        // 处理流式响应的通用函数
         async function handleStream(res, element) {
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
             element.innerText = "";
+            const history = document.getElementById('chat-history');
             
             while (true) {
                 const { done, value } = await reader.read();
@@ -174,6 +172,8 @@
                             const data = JSON.parse(line.substring(6));
                             if (data.text) {
                                 element.innerText += data.text;
+                                // 自动滚动到底部
+                                if (history) history.scrollTop = history.scrollHeight;
                             }
                         } catch (e) { console.error("解析错误", e); }
                     }
@@ -181,7 +181,6 @@
             }
         }
 
-        // 顶部“询问星河”按钮
         async function askTheUniverse() {
             const modal = document.getElementById('fortune-modal');
             const txt = document.getElementById('fortune-text');
@@ -200,15 +199,14 @@
 
         function closeFortune() { document.getElementById('fortune-modal').classList.add('hidden'); }
 
-        // 输入框“发送”按钮
-        document.getElementById('send-btn').onclick = async () => {
+        // 发送逻辑
+        const handleSend = async () => {
             const input = document.getElementById('user-input');
             const message = input.value.trim();
             if (!message) return;
 
             const history = document.getElementById('chat-history');
             
-            // 显示用户消息
             history.innerHTML += `
                 <div class="text-white/20 text-xs tracking-[0.3em] uppercase mt-12 mb-2">你</div>
                 <div class="text-white/80 font-light tracking-widest mb-8">${message}</div>
@@ -217,8 +215,9 @@
             `;
             
             const aiDisplay = document.getElementById('loading-ai');
-            aiDisplay.id = ""; // 移除ID防止重复
+            aiDisplay.id = ""; 
             input.value = "";
+            history.scrollTop = history.scrollHeight;
 
             try {
                 const res = await fetch(`${BACKEND_URL}/api/chat`, {
@@ -232,6 +231,16 @@
                 console.error(e);
             }
         };
+
+        // 绑定点击事件
+        document.getElementById('send-btn').onclick = handleSend;
+
+        // 绑定回车事件
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSend();
+            }
+        });
 
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
