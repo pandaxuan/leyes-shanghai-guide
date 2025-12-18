@@ -2,20 +2,21 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Leyes - 答案之书</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
     
     <style>
-        body { margin: 0; background: #000205; color: white; overflow-x: hidden; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+        body { margin: 0; background: #000205; color: white; overflow-x: hidden; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; -webkit-tap-highlight-color: transparent; }
         #canvas-container { position: fixed; inset: 0; z-index: 0; }
         #main-ui { position: relative; z-index: 10; pointer-events: none; }
         #main-ui * { pointer-events: auto; }
         .glass-card {
             background: rgba(255, 255, 255, 0.01);
             backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
         }
@@ -25,41 +26,48 @@
         }
         .reveal-text { animation: answer-reveal 1.5s ease-out forwards; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* 移动端特殊微调 */
+        @media (max-width: 640px) {
+            #hero-title { font-size: 1.875rem; tracking: 0.3em; }
+            .nav-container { padding: 1.5rem !important; }
+            .input-container { padding: 1.5rem !important; }
+        }
     </style>
 </head>
 <body>
 
     <div id="canvas-container"></div>
 
-    <nav class="p-8 flex justify-between items-center sticky top-0 z-50">
-        <h1 class="text-2xl font-light tracking-[0.3em] text-white/80 uppercase italic">Leyes.</h1>
-        <button onclick="askTheUniverse()" class="glass-card text-white/90 px-8 py-3 rounded-full text-xs tracking-widest border border-white/10 hover:bg-white/5 transition-all">
+    <nav class="p-8 flex justify-between items-center sticky top-0 z-50 nav-container">
+        <h1 class="text-xl sm:text-2xl font-light tracking-[0.2em] sm:tracking-[0.3em] text-white/80 uppercase italic">Leyes.</h1>
+        <button onclick="askTheUniverse()" class="glass-card text-white/90 px-5 sm:px-8 py-2.5 sm:py-3 rounded-full text-[10px] sm:text-xs tracking-widest border border-white/10 hover:bg-white/5 transition-all">
             询问星河
         </button>
     </nav>
 
-    <div id="main-ui" class="max-w-2xl mx-auto px-6 pt-20 text-center">
-        <div class="mb-16">
-            <h2 id="hero-title" class="text-4xl font-extralight tracking-[0.5em] mb-4 text-white/90">答案之书</h2>
-            <p class="text-white/30 tracking-widest text-sm uppercase">在碎钻星河中找到你的必然</p>
+    <div id="main-ui" class="max-w-2xl mx-auto px-6 pt-12 sm:pt-20 text-center">
+        <div class="mb-10 sm:mb-16">
+            <h2 id="hero-title" class="text-3xl sm:text-4xl font-extralight tracking-[0.4em] sm:tracking-[0.5em] mb-4 text-white/90">答案之书</h2>
+            <p class="text-white/30 tracking-widest text-[10px] sm:text-sm uppercase">在碎钻星河中找到你的必然</p>
         </div>
-        <div id="chat-history" class="space-y-8 mb-40 no-scrollbar overflow-y-auto max-h-[40vh] px-4 text-left"></div>
+        <div id="chat-history" class="space-y-8 mb-48 no-scrollbar overflow-y-auto max-h-[55vh] sm:max-h-[40vh] px-2 sm:px-4 text-left"></div>
     </div>
 
-    <div class="fixed bottom-0 left-0 right-0 p-12 z-50">
-        <div class="max-w-xl mx-auto flex gap-6 items-center glass-card p-3 rounded-full">
-            <input type="text" id="user-input" class="flex-grow bg-transparent text-white px-6 py-2 outline-none placeholder:text-white/20 text-sm tracking-widest" placeholder="描述你内心的困惑...">
-            <button id="send-btn" class="text-white/40 hover:text-white transition-colors p-2">
-                <i data-lucide="arrow-up-circle" class="w-8 h-8"></i>
+    <div class="fixed bottom-0 left-0 right-0 p-6 sm:p-12 z-50 input-container">
+        <div class="max-w-xl mx-auto flex gap-3 sm:gap-6 items-center glass-card p-2 sm:p-3 rounded-full">
+            <input type="text" id="user-input" class="flex-grow bg-transparent text-white px-4 sm:px-6 py-2 outline-none placeholder:text-white/20 text-xs sm:text-sm tracking-widest" placeholder="描述你的困惑...">
+            <button id="send-btn" class="text-white/40 hover:text-white transition-colors p-1 sm:p-2">
+                <i data-lucide="arrow-up-circle" class="w-7 h-7 sm:w-8 sm:h-8"></i>
             </button>
         </div>
     </div>
 
     <div id="fortune-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
         <div class="max-w-md w-full text-center">
-            <div class="text-white/20 mb-12 tracking-[1em] text-xs uppercase">星河的启示</div>
-            <p id="fortune-text" class="reveal-text text-2xl font-light leading-relaxed text-white/90 mb-16 tracking-widest px-4"></p>
-            <button onclick="closeFortune()" class="text-white/30 hover:text-white text-xs tracking-[0.4em] uppercase transition-all">
+            <div class="text-white/20 mb-8 sm:mb-12 tracking-[1em] text-[10px] sm:text-xs uppercase">星河的启示</div>
+            <p id="fortune-text" class="reveal-text text-xl sm:text-2xl font-light leading-relaxed text-white/90 mb-12 sm:mb-16 tracking-widest px-4"></p>
+            <button onclick="closeFortune()" class="text-white/30 hover:text-white text-[10px] sm:text-xs tracking-[0.4em] uppercase transition-all">
                 [ 闭上双眼 ]
             </button>
         </div>
@@ -69,7 +77,7 @@
         const BACKEND_URL = 'https://leyes-shanghai-guide.onrender.com';
 
         let scene, camera, renderer, particles, mouse = new THREE.Vector2(), targetMouse = new THREE.Vector2();
-        const PARTICLE_COUNT = 12000;
+        const PARTICLE_COUNT = window.innerWidth < 640 ? 6000 : 12000; // 移动端减少粒子数量以保证性能
 
         function createGlowTexture() {
             const canvas = document.createElement('canvas');
@@ -113,14 +121,26 @@
             geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
             geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             geo.setAttribute('originalColor', new THREE.BufferAttribute(originalColors, 3));
-            const mat = new THREE.PointsMaterial({ size: 0.04, map: createGlowTexture(), vertexColors: true, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true });
+            const mat = new THREE.PointsMaterial({ 
+                size: window.innerWidth < 640 ? 0.06 : 0.04, // 手机端稍微调大粒子
+                map: createGlowTexture(), 
+                vertexColors: true, 
+                transparent: true, 
+                opacity: 0.7, 
+                blending: THREE.AdditiveBlending, 
+                depthWrite: false, 
+                sizeAttenuation: true 
+            });
             particles = new THREE.Points(geo, mat);
             scene.add(particles);
 
-            window.addEventListener('mousemove', (e) => {
-                targetMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-                targetMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-            });
+            // 适配手机触摸
+            const handleMove = (x, y) => {
+                targetMouse.x = (x / window.innerWidth) * 2 - 1;
+                targetMouse.y = -(y / window.innerHeight) * 2 + 1;
+            };
+            window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+            window.addEventListener('touchmove', (e) => handleMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
         }
 
         function animate() {
@@ -172,7 +192,6 @@
                             const data = JSON.parse(line.substring(6));
                             if (data.text) {
                                 element.innerText += data.text;
-                                // 自动滚动到底部
                                 if (history) history.scrollTop = history.scrollHeight;
                             }
                         } catch (e) { console.error("解析错误", e); }
@@ -186,7 +205,6 @@
             const txt = document.getElementById('fortune-text');
             modal.classList.remove('hidden');
             txt.innerText = "冥想中...";
-
             try {
                 const res = await fetch(`${BACKEND_URL}/api/chat`, {
                     method: 'POST',
@@ -199,26 +217,21 @@
 
         function closeFortune() { document.getElementById('fortune-modal').classList.add('hidden'); }
 
-        // 发送逻辑
         const handleSend = async () => {
             const input = document.getElementById('user-input');
             const message = input.value.trim();
             if (!message) return;
-
             const history = document.getElementById('chat-history');
-            
             history.innerHTML += `
-                <div class="text-white/20 text-xs tracking-[0.3em] uppercase mt-12 mb-2">你</div>
-                <div class="text-white/80 font-light tracking-widest mb-8">${message}</div>
-                <div class="text-white/20 text-xs tracking-[0.3em] uppercase mt-4 mb-2">星河</div>
-                <div id="loading-ai" class="text-white/60 font-light tracking-widest mb-8 italic">正在聆听...</div>
+                <div class="text-white/20 text-[10px] tracking-[0.3em] uppercase mt-10 mb-2">你</div>
+                <div class="text-white/80 font-light text-sm sm:text-base tracking-widest mb-8">${message}</div>
+                <div class="text-white/20 text-[10px] tracking-[0.3em] uppercase mt-4 mb-2">星河</div>
+                <div id="loading-ai" class="text-white/60 font-light text-sm sm:text-base tracking-widest mb-8 italic">正在聆听...</div>
             `;
-            
             const aiDisplay = document.getElementById('loading-ai');
             aiDisplay.id = ""; 
             input.value = "";
             history.scrollTop = history.scrollHeight;
-
             try {
                 const res = await fetch(`${BACKEND_URL}/api/chat`, {
                     method: 'POST',
@@ -232,14 +245,9 @@
             }
         };
 
-        // 绑定点击事件
         document.getElementById('send-btn').onclick = handleSend;
-
-        // 绑定回车事件
         document.getElementById('user-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleSend();
-            }
+            if (e.key === 'Enter') handleSend();
         });
 
         window.addEventListener('resize', () => {
