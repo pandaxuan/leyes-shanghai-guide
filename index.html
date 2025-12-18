@@ -43,15 +43,14 @@
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.01);
+            background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.6);
             pointer-events: auto;
         }
 
-        /* 极致空灵的入场动画 */
         @keyframes ethereal-fade {
             from { opacity: 0; filter: blur(12px); transform: translateY(15px) scale(1.05); }
             to { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
@@ -62,6 +61,10 @@
         
         @media (max-width: 640px) {
             #chat-history { margin-top: 70px; margin-bottom: 90px; }
+            /* 移动端标题更醒目 */
+            .mobile-title { font-size: 2.5rem !important; line-height: 1.2; letter-spacing: 0.6em !important; }
+            .mobile-text { font-size: 1rem !important; font-weight: 300 !important; color: rgba(255,255,255,0.9) !important; }
+            .mobile-label { font-size: 11px !important; color: rgba(255,255,255,0.3) !important; }
         }
     </style>
 </head>
@@ -71,8 +74,8 @@
 
     <div id="fixed-nav">
         <nav class="p-6 sm:p-10 flex justify-between items-center pointer-events-auto">
-            <h1 class="text-lg sm:text-xl font-thin tracking-[0.4em] text-white/60 uppercase italic">Leyes.</h1>
-            <button onclick="askTheUniverse()" class="glass-card text-white/60 px-6 sm:px-10 py-2.5 sm:py-3 rounded-full text-[9px] sm:text-[10px] tracking-[0.5em] border border-white/5 hover:bg-white/5 hover:text-white transition-all duration-1000">
+            <h1 class="text-lg sm:text-xl font-thin tracking-[0.4em] text-white/70 uppercase italic">Leyes.</h1>
+            <button onclick="askTheUniverse()" class="glass-card text-white/80 px-6 sm:px-10 py-2.5 sm:py-3 rounded-full text-[10px] sm:text-[10px] tracking-[0.5em] border border-white/10 hover:bg-white/10 transition-all duration-1000">
                 询问星河
             </button>
         </nav>
@@ -82,31 +85,31 @@
         <div id="chat-history" class="space-y-12 no-scrollbar max-w-2xl mx-auto w-full">
             
             <div class="text-center pt-24 pb-20 sm:pt-32 sm:pb-32 ethereal-text">
-                <h2 class="text-3xl sm:text-5xl font-thin tracking-[0.8em] sm:tracking-[1.2em] mb-8 text-white/70">凝望星河</h2>
-                <div class="flex justify-center items-center gap-4">
-                    <div class="h-[1px] w-8 bg-white/10"></div>
-                    <p class="text-white/20 tracking-[0.6em] text-[9px] sm:text-xs uppercase">在璀璨星河中找到你的必然</p>
-                    <div class="h-[1px] w-8 bg-white/10"></div>
+                <h2 class="text-3xl sm:text-5xl font-thin tracking-[0.8em] sm:tracking-[1.2em] mb-8 text-white/80 mobile-title">凝望星河</h2>
+                <div class="flex justify-center items-center gap-4 px-4">
+                    <div class="h-[1px] w-6 bg-white/20"></div>
+                    <p class="text-white/30 tracking-[0.5em] text-[10px] sm:text-xs uppercase">在碎钻星河中找到你的必然</p>
+                    <div class="h-[1px] w-6 bg-white/20"></div>
                 </div>
             </div>
 
-            </div>
+        </div>
     </div>
 
     <div class="fixed bottom-0 left-0 right-0 p-8 sm:p-16 z-50">
-        <div class="max-w-xl mx-auto flex gap-4 items-center glass-card p-2 sm:p-3 rounded-full border-white/5">
-            <input type="text" id="user-input" class="flex-grow bg-transparent text-white/80 px-5 sm:px-8 py-2 outline-none placeholder:text-white/10 text-xs sm:text-sm tracking-[0.3em] font-light" placeholder="描述你的困惑...">
-            <button id="send-btn" class="text-white/20 hover:text-white/80 transition-all duration-700 p-1 sm:p-2">
-                <i data-lucide="arrow-up-circle" class="w-7 h-7 sm:w-8 sm:h-8 stroke-[1px]"></i>
+        <div class="max-w-xl mx-auto flex gap-4 items-center glass-card p-3 sm:p-3 rounded-full border-white/10">
+            <input type="text" id="user-input" class="flex-grow bg-transparent text-white px-5 sm:px-8 py-2 outline-none placeholder:text-white/20 text-sm sm:text-sm tracking-[0.2em] font-light" placeholder="描述你的困惑...">
+            <button id="send-btn" class="text-white/40 hover:text-white transition-all duration-700 p-1 sm:p-2">
+                <i data-lucide="arrow-up-circle" class="w-8 h-8 sm:w-8 sm:h-8 stroke-[1px]"></i>
             </button>
         </div>
     </div>
 
-    <div id="fortune-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/90 backdrop-blur-2xl">
+    <div id="fortune-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
         <div class="max-w-md w-full text-center ethereal-text">
-            <div class="text-white/10 mb-10 tracking-[1.5em] text-[9px] uppercase font-thin">星河的启示</div>
-            <p id="fortune-text" class="text-lg sm:text-xl font-thin leading-loose text-white/80 mb-16 tracking-[0.5em] px-4"></p>
-            <button onclick="closeFortune()" class="text-white/20 hover:text-white/60 text-[9px] tracking-[0.6em] uppercase transition-all duration-1000">
+            <div class="text-white/20 mb-10 tracking-[1.5em] text-[10px] uppercase font-thin">星河的启示</div>
+            <p id="fortune-text" class="text-xl sm:text-2xl font-thin leading-loose text-white/90 mb-16 tracking-[0.4em] px-4 mobile-text"></p>
+            <button onclick="closeFortune()" class="text-white/30 hover:text-white text-[11px] tracking-[0.6em] uppercase transition-all duration-1000">
                 [ 闭上双眼 ]
             </button>
         </div>
@@ -115,7 +118,8 @@
     <script>
         const BACKEND_URL = 'https://leyes-shanghai-guide.onrender.com';
         let scene, camera, renderer, particles, mouse = new THREE.Vector2(), targetMouse = new THREE.Vector2();
-        const PARTICLE_COUNT = window.innerWidth < 640 ? 5000 : 12000;
+        // 手机端粒子体感更大更亮
+        const PARTICLE_COUNT = window.innerWidth < 640 ? 4500 : 12000;
 
         function createGlowTexture() {
             const canvas = document.createElement('canvas');
@@ -123,8 +127,8 @@
             const ctx = canvas.getContext('2d');
             const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
             gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.6)');
-            gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+            gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.7)');
+            gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.2)');
             gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, 64, 64);
@@ -144,7 +148,8 @@
             const pos = new Float32Array(PARTICLE_COUNT * 3);
             const colors = new Float32Array(PARTICLE_COUNT * 3);
             const originalColors = new Float32Array(PARTICLE_COUNT * 3);
-            const palette = [new THREE.Color('#ffffff'), new THREE.Color('#a5f3fc'), new THREE.Color('#ddd6fe'), new THREE.Color('#f5d0fe')];
+            // 增加亮色权重
+            const palette = [new THREE.Color('#ffffff'), new THREE.Color('#ffffff'), new THREE.Color('#bae6fd'), new THREE.Color('#e9d5ff')];
 
             for (let i = 0; i < PARTICLE_COUNT; i++) {
                 pos[i*3] = (Math.random() - 0.5) * 20;
@@ -160,11 +165,12 @@
             geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             geo.setAttribute('originalColor', new THREE.BufferAttribute(originalColors, 3));
             const mat = new THREE.PointsMaterial({ 
-                size: window.innerWidth < 640 ? 0.05 : 0.035, 
+                // 显著调大手机端粒子尺寸
+                size: window.innerWidth < 640 ? 0.08 : 0.035, 
                 map: createGlowTexture(), 
                 vertexColors: true, 
                 transparent: true, 
-                opacity: 0.5, 
+                opacity: window.innerWidth < 640 ? 0.7 : 0.5, 
                 blending: THREE.AdditiveBlending, 
                 depthWrite: false, 
                 sizeAttenuation: true 
@@ -261,10 +267,10 @@
             const history = document.getElementById('chat-history');
             
             history.innerHTML += `
-                <div class="text-white/10 text-[9px] tracking-[0.4em] uppercase mt-4 mb-2">叩问</div>
-                <div class="text-white/60 font-thin text-sm sm:text-base tracking-[0.2em] mb-10">${message}</div>
-                <div class="text-white/10 text-[9px] tracking-[0.4em] uppercase mt-4 mb-2">星响</div>
-                <div id="loading-ai" class="text-white/40 font-thin text-sm sm:text-base tracking-[0.2em] mb-10 italic">聆听群星...</div>
+                <div class="text-white/20 text-[10px] sm:text-[9px] tracking-[0.4em] uppercase mt-4 mb-2 mobile-label">叩问</div>
+                <div class="text-white/80 font-thin text-base sm:text-base tracking-[0.1em] mb-10 mobile-text">${message}</div>
+                <div class="text-white/20 text-[10px] sm:text-[9px] tracking-[0.4em] uppercase mt-4 mb-2 mobile-label">星响</div>
+                <div id="loading-ai" class="text-white/50 font-thin text-base sm:text-base tracking-[0.1em] mb-10 italic mobile-text">聆听群星...</div>
             `;
             
             const aiDisplay = document.getElementById('loading-ai');
