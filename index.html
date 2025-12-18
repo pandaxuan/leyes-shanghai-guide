@@ -13,7 +13,6 @@
         #canvas-container { position: fixed; inset: 0; z-index: 0; }
         
         #fixed-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; pointer-events: none; }
-
         #main-ui { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; pointer-events: none; }
 
         #chat-history { 
@@ -37,27 +36,20 @@
             pointer-events: auto;
         }
 
+        @keyframes rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .music-spinning { animation: rotate-slow 4s linear infinite; }
+
         @keyframes ethereal-fade {
             from { opacity: 0; filter: blur(12px); transform: translateY(15px) scale(1.05); }
             to { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
         }
         .ethereal-text { animation: ethereal-fade 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* 核心修复：修正字间距导致的重心偏移 */
-        .center-tracking {
-            padding-left: 0.8em; /* 必须与 tracking 数值一致以实现绝对居中 */
-        }
+        .center-tracking { padding-left: 0.8em; }
 
         @media (max-width: 640px) {
             #chat-history { margin-top: 70px; margin-bottom: 90px; }
-            .mobile-title { 
-                font-size: 2.2rem !important; 
-                line-height: 1.2; 
-                letter-spacing: 0.6em !important; 
-                padding-left: 0.6em !important; /* 移动端同步修正 */
-            }
+            .mobile-title { font-size: 2.2rem !important; letter-spacing: 0.6em !important; padding-left: 0.6em !important; }
             .mobile-text { font-size: 1rem !important; font-weight: 300 !important; color: rgba(255,255,255,0.9) !important; }
         }
     </style>
@@ -65,20 +57,24 @@
 <body>
 
     <div id="canvas-container"></div>
+    <audio id="bgm" loop src="bgm.mp3"></audio>
 
     <div id="fixed-nav">
         <nav class="p-6 sm:p-10 flex justify-between items-center pointer-events-auto">
             <h1 class="text-lg sm:text-xl font-thin tracking-[0.4em] text-white/70 uppercase italic">Leyes.</h1>
-            <button onclick="askTheUniverse()" class="glass-card text-white/80 px-6 sm:px-10 py-2.5 sm:py-3 rounded-full text-[10px] sm:text-[10px] tracking-[0.5em] border border-white/10 hover:bg-white/10 transition-all duration-1000">
-                询问星河
-            </button>
+            <div class="flex items-center gap-3 sm:gap-6">
+                <button id="music-btn" onclick="toggleMusic()" class="glass-card flex items-center gap-2 text-white/60 px-4 py-2.5 rounded-full border border-white/5 transition-all">
+                    <div id="music-icon-container"><i data-lucide="music" class="w-3 h-3 sm:w-4 sm:h-4"></i></div>
+                    <span class="text-[9px] sm:text-[10px] tracking-[0.3em] uppercase">星河音乐</span>
+                </button>
+                <button onclick="askTheUniverse()" class="glass-card text-white/80 px-6 sm:px-10 py-2.5 sm:py-3 rounded-full text-[10px] tracking-[0.5em] border border-white/10 hover:bg-white/10 transition-all duration-1000">询问星河</button>
+            </div>
         </nav>
     </div>
 
     <div id="main-ui">
-        <div id="chat-history" class="space-y-12 no-scrollbar max-w-2xl mx-auto w-full">
-            
-            <div class="text-center pt-24 pb-20 sm:pt-32 sm:pb-32 ethereal-text">
+        <div id="chat-history" class="no-scrollbar max-w-2xl mx-auto w-full">
+            <div id="header-section" class="text-center pt-24 pb-20 sm:pt-32 sm:pb-32 ethereal-text">
                 <h2 class="text-3xl sm:text-5xl font-thin tracking-[0.8em] sm:tracking-[1.2em] mb-8 text-white/80 mobile-title center-tracking">凝望星河</h2>
                 <div class="flex justify-center items-center gap-4 px-4">
                     <div class="h-[1px] w-6 bg-white/20"></div>
@@ -86,14 +82,15 @@
                     <div class="h-[1px] w-6 bg-white/20"></div>
                 </div>
             </div>
+            <div id="message-container" class="space-y-12 pb-20"></div>
         </div>
     </div>
 
     <div class="fixed bottom-0 left-0 right-0 p-8 sm:p-16 z-50">
         <div class="max-w-xl mx-auto flex gap-4 items-center glass-card p-3 sm:p-3 rounded-full border-white/10">
-            <input type="text" id="user-input" class="flex-grow bg-transparent text-white px-5 sm:px-8 py-2 outline-none placeholder:text-white/20 text-sm sm:text-sm tracking-[0.2em] font-light" placeholder="描述你的困惑...">
-            <button id="send-btn" class="text-white/40 hover:text-white transition-all duration-700 p-1 sm:p-2">
-                <i data-lucide="arrow-up-circle" class="w-8 h-8 sm:w-8 sm:h-8 stroke-[1px]"></i>
+            <input type="text" id="user-input" class="flex-grow bg-transparent text-white px-5 sm:px-8 py-2 outline-none placeholder:text-white/20 text-sm tracking-[0.2em] font-light" placeholder="描述你的困惑...">
+            <button id="send-btn" class="text-white/40 hover:text-white transition-all duration-700 p-1">
+                <i data-lucide="arrow-up-circle" class="w-8 h-8 stroke-[1px]"></i>
             </button>
         </div>
     </div>
@@ -101,118 +98,30 @@
     <div id="fortune-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
         <div class="max-w-md w-full text-center ethereal-text">
             <div class="text-white/20 mb-10 tracking-[1.5em] text-[10px] uppercase font-thin">星河的启示</div>
-            <p id="fortune-text" class="text-xl sm:text-2xl font-thin leading-loose text-white/90 mb-16 tracking-[0.4em] px-4 mobile-text"></p>
-            <button onclick="closeFortune()" class="text-white/30 hover:text-white text-[11px] tracking-[0.6em] uppercase transition-all duration-1000">
-                [ 闭上双眼 ]
-            </button>
+            <p id="fortune-text" class="text-xl font-thin leading-loose text-white/90 mb-16 tracking-[0.4em] px-4 mobile-text"></p>
+            <button onclick="closeFortune()" class="text-white/30 hover:text-white text-[11px] tracking-[0.6em] uppercase transition-all duration-1000">[ 闭上双眼 ]</button>
         </div>
     </div>
 
     <script>
         const BACKEND_URL = 'https://leyes-shanghai-guide.onrender.com';
-        let scene, camera, renderer, particles, mouse = new THREE.Vector2(), targetMouse = new THREE.Vector2();
-        const PARTICLE_COUNT = window.innerWidth < 640 ? 4500 : 12000;
+        const bgm = document.getElementById('bgm');
+        const musicBtn = document.getElementById('music-btn');
+        const musicIconContainer = document.getElementById('music-icon-container');
+        let isPlaying = false;
 
-        function createGlowTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 64; canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.7)');
-            gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.2)');
-            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, 64, 64);
-            return new THREE.CanvasTexture(canvas);
+        function toggleMusic() {
+            if (isPlaying) { bgm.pause(); musicIconContainer.classList.remove('music-spinning'); musicBtn.style.opacity = "0.4"; }
+            else { bgm.play().catch(e => {}); musicIconContainer.classList.add('music-spinning'); musicBtn.style.opacity = "1"; }
+            isPlaying = !isPlaying;
         }
 
-        function initThree() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 7;
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-            const geo = new THREE.BufferGeometry();
-            const pos = new Float32Array(PARTICLE_COUNT * 3);
-            const colors = new Float32Array(PARTICLE_COUNT * 3);
-            const originalColors = new Float32Array(PARTICLE_COUNT * 3);
-            const palette = [new THREE.Color('#ffffff'), new THREE.Color('#ffffff'), new THREE.Color('#bae6fd'), new THREE.Color('#e9d5ff')];
-
-            for (let i = 0; i < PARTICLE_COUNT; i++) {
-                pos[i*3] = (Math.random() - 0.5) * 20;
-                pos[i*3+1] = (Math.random() - 0.5) * 20;
-                pos[i*3+2] = (Math.random() - 0.5) * 10;
-                const col = palette[Math.floor(Math.random() * palette.length)];
-                colors[i*3] = originalColors[i*3] = col.r;
-                colors[i*3+1] = originalColors[i*3+1] = col.g;
-                colors[i*3+2] = originalColors[i*3+2] = col.b;
-            }
-
-            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-            geo.setAttribute('originalColor', new THREE.BufferAttribute(originalColors, 3));
-            const mat = new THREE.PointsMaterial({ 
-                size: window.innerWidth < 640 ? 0.08 : 0.035, 
-                map: createGlowTexture(), 
-                vertexColors: true, 
-                transparent: true, 
-                opacity: window.innerWidth < 640 ? 0.7 : 0.5, 
-                blending: THREE.AdditiveBlending, 
-                depthWrite: false, 
-                sizeAttenuation: true 
-            });
-            particles = new THREE.Points(geo, mat);
-            scene.add(particles);
-
-            const handleMove = (x, y) => {
-                targetMouse.x = (x / window.innerWidth) * 2 - 1;
-                targetMouse.y = -(y / window.innerHeight) * 2 + 1;
-            };
-            window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
-            window.addEventListener('touchmove', (e) => handleMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            mouse.lerp(targetMouse, 0.02);
-            const positions = particles.geometry.attributes.position.array;
-            const colors = particles.geometry.attributes.color.array;
-            const originals = particles.geometry.attributes.originalColor.array;
-            const time = Date.now() * 0.0003;
-
-            for (let i = 0; i < PARTICLE_COUNT; i++) {
-                const i3 = i * 3;
-                positions[i3] += Math.sin(time + i) * 0.0004;
-                positions[i3+1] += Math.cos(time + i) * 0.0004;
-                const flicker = 0.8 + Math.sin(time * 5 + i) * 0.2;
-                colors[i3] = originals[i3] * flicker;
-                colors[i3+1] = originals[i3+1] * flicker;
-                colors[i3+2] = originals[i3+2] * flicker;
-                const dx = positions[i3] - (mouse.x * 6);
-                const dy = positions[i3+1] - (mouse.y * 4);
-                const distSq = dx*dx + dy*dy;
-                if (distSq < 3) {
-                    const dist = Math.sqrt(distSq);
-                    const force = (1.5 - dist) / 1.5;
-                    positions[i3] += dx * force * 0.01;
-                    positions[i3+1] += dy * force * 0.01;
-                }
-            }
-            particles.geometry.attributes.position.needsUpdate = true;
-            particles.geometry.attributes.color.needsUpdate = true;
-            particles.rotation.y += 0.0002;
-            renderer.render(scene, camera);
-        }
-
+        // --- 修复聊天逻辑 ---
         async function handleStream(res, element) {
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
-            element.innerText = "";
             const history = document.getElementById('chat-history');
+            element.innerText = "";
             
             while (true) {
                 const { done, value } = await reader.read();
@@ -225,13 +134,57 @@
                             const data = JSON.parse(line.substring(6));
                             if (data.text) {
                                 element.innerText += data.text;
-                                history.scrollTop = history.scrollHeight;
+                                // 实时滚动
+                                history.scrollTo({ top: history.scrollHeight, behavior: 'auto' });
                             }
-                        } catch (e) { console.error(e); }
+                        } catch (e) {}
                     }
                 }
             }
         }
+
+        const handleSend = async () => {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const container = document.getElementById('message-container');
+            const history = document.getElementById('chat-history');
+            const uniqueId = 'ai-' + Date.now();
+
+            // 使用 insertAdjacentHTML 替代 innerHTML +=，防止重绘闪烁
+            const userHtml = `
+                <div class="mb-10">
+                    <div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 mobile-label center-tracking">叩问</div>
+                    <div class="text-white/80 font-thin text-base tracking-[0.1em] mobile-text">${message}</div>
+                </div>
+            `;
+            const aiHtml = `
+                <div class="mb-10">
+                    <div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 mobile-label center-tracking">星响</div>
+                    <div id="${uniqueId}" class="text-white/60 font-thin text-base tracking-[0.1em] italic mobile-text">聆听群星...</div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', userHtml);
+            container.insertAdjacentHTML('beforeend', aiHtml);
+            
+            const aiDisplay = document.getElementById(uniqueId);
+            input.value = "";
+            history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, language: 'zh' }),
+                });
+                await handleStream(res, aiDisplay);
+                aiDisplay.classList.remove('italic'); // 完成后取消斜体
+            } catch (e) {
+                aiDisplay.innerText = "信号在光年外迷失了...";
+            }
+        };
 
         async function askTheUniverse() {
             const modal = document.getElementById('fortune-modal');
@@ -249,49 +202,79 @@
         }
 
         function closeFortune() { document.getElementById('fortune-modal').classList.add('hidden'); }
-
-        const handleSend = async () => {
-            const input = document.getElementById('user-input');
-            const message = input.value.trim();
-            if (!message) return;
-            const history = document.getElementById('chat-history');
-            
-            history.innerHTML += `
-                <div class="text-white/20 text-[10px] sm:text-[9px] tracking-[0.4em] uppercase mt-4 mb-2 mobile-label center-tracking">叩问</div>
-                <div class="text-white/80 font-thin text-base sm:text-base tracking-[0.1em] mb-10 mobile-text">${message}</div>
-                <div class="text-white/20 text-[10px] sm:text-[9px] tracking-[0.4em] uppercase mt-4 mb-2 mobile-label center-tracking">星响</div>
-                <div id="loading-ai" class="text-white/50 font-thin text-base sm:text-base tracking-[0.1em] mb-10 italic mobile-text">聆听群星...</div>
-            `;
-            
-            const aiDisplay = document.getElementById('loading-ai');
-            aiDisplay.id = ""; 
-            input.value = "";
-            history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
-
-            try {
-                const res = await fetch(`${BACKEND_URL}/api/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message, language: 'zh' }),
-                });
-                await handleStream(res, aiDisplay);
-            } catch (e) { aiDisplay.innerText = "信号在光年外迷失了..."; }
-        };
-
         document.getElementById('send-btn').onclick = handleSend;
-        document.getElementById('user-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSend();
-        });
+        document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSend(); });
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
+        // --- Three.js 背景保持不变 ---
+        let scene, camera, renderer, particles, mouse = new THREE.Vector2(), targetMouse = new THREE.Vector2();
+        const PARTICLE_COUNT = window.innerWidth < 640 ? 4500 : 12000;
+
+        function createGlowTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.7)');
+            gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.2)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient; ctx.fillRect(0, 0, 64, 64);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function initThree() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 7;
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            const geo = new THREE.BufferGeometry();
+            const pos = new Float32Array(PARTICLE_COUNT * 3);
+            const colors = new Float32Array(PARTICLE_COUNT * 3);
+            const originalColors = new Float32Array(PARTICLE_COUNT * 3);
+            const palette = [new THREE.Color('#ffffff'), new THREE.Color('#ffffff'), new THREE.Color('#bae6fd'), new THREE.Color('#e9d5ff')];
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                pos[i*3] = (Math.random() - 0.5) * 20; pos[i*3+1] = (Math.random() - 0.5) * 20; pos[i*3+2] = (Math.random() - 0.5) * 10;
+                const col = palette[Math.floor(Math.random() * palette.length)];
+                colors[i*3] = originalColors[i*3] = col.r; colors[i*3+1] = originalColors[i*3+1] = col.g; colors[i*3+2] = originalColors[i*3+2] = col.b;
+            }
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.setAttribute('originalColor', new THREE.BufferAttribute(originalColors, 3));
+            const mat = new THREE.PointsMaterial({ size: window.innerWidth < 640 ? 0.08 : 0.035, map: createGlowTexture(), vertexColors: true, transparent: true, opacity: window.innerWidth < 640 ? 0.7 : 0.5, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true });
+            particles = new THREE.Points(geo, mat);
+            scene.add(particles);
+            const handleMove = (x, y) => { targetMouse.x = (x / window.innerWidth) * 2 - 1; targetMouse.y = -(y / window.innerHeight) * 2 + 1; };
+            window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+            window.addEventListener('touchmove', (e) => handleMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+        }
 
-        initThree();
-        animate();
-        lucide.createIcons();
+        function animate() {
+            requestAnimationFrame(animate);
+            mouse.lerp(targetMouse, 0.02);
+            const positions = particles.geometry.attributes.position.array;
+            const colors = particles.geometry.attributes.color.array;
+            const originals = particles.geometry.attributes.originalColor.array;
+            const time = Date.now() * 0.0003;
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const i3 = i * 3;
+                positions[i3] += Math.sin(time + i) * 0.0004; positions[i3+1] += Math.cos(time + i) * 0.0004;
+                const flicker = 0.8 + Math.sin(time * 5 + i) * 0.2;
+                colors[i3] = originals[i3] * flicker; colors[i3+1] = originals[i3+1] * flicker; colors[i3+2] = originals[i3+2] * flicker;
+                const dx = positions[i3] - (mouse.x * 6); const dy = positions[i3+1] - (mouse.y * 4);
+                const distSq = dx*dx + dy*dy;
+                if (distSq < 3) { const dist = Math.sqrt(distSq); const force = (1.5 - dist) / 1.5; positions[i3] += dx * force * 0.01; positions[i3+1] += dy * force * 0.01; }
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+            particles.geometry.attributes.color.needsUpdate = true;
+            particles.rotation.y += 0.0002;
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+        initThree(); animate(); lucide.createIcons();
     </script>
 </body>
 </html>
