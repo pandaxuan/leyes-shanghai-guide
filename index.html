@@ -3,333 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leyes - Local Eyes on China</title>
+    <title>Leyes - 答案之书</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+    
     <style>
-        @keyframes slideUp {
-            from { transform: translateY(100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        body { margin: 0; background: #000205; color: white; overflow-x: hidden; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+        #canvas-container { position: fixed; inset: 0; z-index: 0; }
+        
+        #main-ui { position: relative; z-index: 10; pointer-events: none; }
+        #main-ui * { pointer-events: auto; }
+        
+        /* 继承之前的超模糊玻璃质感 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
         }
-        .animate-slide-up { animation: slideUp 0.8s ease-out forwards; }
+
+        /* 答案出现的仪式感动画 */
+        @keyframes answer-reveal {
+            from { opacity: 0; transform: scale(0.9) translateY(10px); filter: blur(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+        .reveal-text { animation: answer-reveal 1.5s ease-out forwards; }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        #top-save-prompt {
-            position: sticky;
-            top: 0; 
-            z-index: 60; 
-            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-            transform: translateY(-100%); 
-            opacity: 0;
-        }
-        .show-prompt { transform: translateY(0) !important; opacity: 1 !important; }
-
-        #chat-input-area-fixed {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 70; 
-            background-color: #f8fafc; 
-            padding: 16px 0; 
-            box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.05); 
-        }
-        
-        #chat-history {
-            padding-bottom: 112px; 
-            /* 移除固定高度，改用 flex 增长或配合 main 布局 */
-            min-height: 400px;
-        }
-
-        /* 标签栏吸附效果优化 */
-        .tabs-container {
-            position: sticky;
-            top: 108px; /* 紧跟在 nav 后面 */
-            background: #f8fafc;
-            z-index: 45;
-        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans">
+<body>
 
-    <div id="top-save-prompt" class="bg-blue-600 w-full shadow-lg pointer-events-none">
-        <div class="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-3 pointer-events-auto">
-                <i data-lucide="smartphone" class="w-5 h-5 text-white"></i>
-                <div>
-                    <p class="font-bold text-sm text-white" data-key="save_prompt_title">Save Leyes to Desktop</p>
-                    <p class="text-[10px] text-blue-200 uppercase tracking-tighter" data-key="save_prompt_subtitle">One-tap access for your trip</p>
-                </div>
-            </div>
-            <button onclick="toggleInstructions(true)" data-key="save_prompt_button" class="pointer-events-auto bg-white text-blue-600 px-4 py-1.5 rounded-xl text-xs font-black uppercase hover:bg-blue-50 transition-colors shadow">
-                How?
-            </button>
-        </div>
-    </div>
-    
-    <nav class="p-6 flex justify-between items-center bg-white shadow-sm sticky top-[48px] z-50">
-        <h1 class="text-3xl font-black tracking-tighter text-blue-600 italic">Leyes.</h1>
-        <div class="flex items-center gap-4">
-            <select id="lang-selector" onchange="setLanguage(this.value)" class="bg-white border border-slate-300 rounded-lg p-2 text-sm font-semibold">
-                <option value="zh">中文</option>
-                <option value="en">English</option>
-                <option value="ja">日本語</option>
-                <option value="ko">한국어</option>
-            </select>
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest" data-key="nav_subtitle">本地知情者</span>
-        </div>
+    <div id="canvas-container"></div>
+
+    <nav class="p-8 flex justify-between items-center sticky top-0 z-50">
+        <h1 class="text-2xl font-light tracking-[0.3em] text-white/80 uppercase italic">Leyes.</h1>
+        <button onclick="askTheUniverse()" class="glass-card text-white/90 px-8 py-3 rounded-full text-xs tracking-widest border border-white/10 hover:bg-white/5 transition-all">
+            询问星河
+        </button>
     </nav>
 
-    <main class="max-w-5xl mx-auto">
-        <div class="tabs-container flex border-b border-slate-200 px-6">
-            <button id="tab-ai" onclick="switchTab('ai')" 
-                    class="tab-button py-3 px-6 text-lg font-bold transition-colors border-b-4 border-blue-600 text-blue-600">
-                <i data-lucide="message-square" class="w-5 h-5 inline-block mr-2"></i><span data-key="tab_ai">AI 推荐</span>
-            </button>
-            <button id="tab-guides" onclick="switchTab('guides')" 
-                    class="tab-button py-3 px-6 text-lg font-bold transition-colors border-b-4 border-transparent text-slate-500 hover:text-slate-700">
-                <i data-lucide="map" class="w-5 h-5 inline-block mr-2"></i><span data-key="tab_guides">攻略合集</span>
-            </button>
+    <div id="main-ui" class="max-w-2xl mx-auto px-6 pt-20 text-center">
+        <div class="mb-16">
+            <h2 id="hero-title" class="text-4xl font-extralight tracking-[0.5em] mb-4 text-white/90">答案之书</h2>
+            <p class="text-white/30 tracking-widest text-sm uppercase">在碎钻星河中找到你的必然</p>
         </div>
 
-        <div id="tab-content" class="px-6 py-8">
-            <div id="content-ai" class="tab-content max-w-2xl mx-auto">
-                <div id="welcome-message-container" class="bg-white rounded-3xl shadow-xl p-6 mb-8 border border-slate-100">
-                    <div class="flex items-center gap-4 mb-4">
-                        <div class="bg-blue-600 p-2 rounded-xl">
-                            <i data-lucide="bot" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <h3 class="text-2xl font-black" data-key="ai_chat_title">Leyes AI 聊天</h3>
-                    </div>
-                    <p class="text-slate-600" data-key="ai_chat_greeting">您好！我是您在上海的美食向导AI。</p>
-                </div>
+        <div id="chat-history" class="space-y-8 mb-40 no-scrollbar overflow-y-auto max-h-[40vh] px-4 text-left"></div>
+    </div>
 
-                <div id="loading-animation-container" class="hidden flex flex-col items-center justify-center py-10">
-                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHp1eHNwZXB3Y2F5dHFqNHJhcG1xcGF5eG84ZDVnbGZ2bjY0Z3RzaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKMGpxxS0D9N6uI/giphy.gif" class="w-24 h-24 rounded-full mb-4 shadow-lg">
-                    <p class="text-blue-600 font-bold animate-pulse text-sm">正在为您搜罗上海美味...</p>
-                </div>
-
-                <div id="chat-history" class="overflow-y-auto no-scrollbar space-y-6">
-                </div>
-            </div>
-
-            <div id="content-guides" class="tab-content hidden">
-                <div id="guides-container" class="grid gap-10 max-w-4xl mx-auto py-0">
-                </div>
-            </div>
-        </div>
-    </main>
-    
-    <div id="chat-input-area-fixed" class="">
-        <div class="max-w-5xl mx-auto px-6">
-            <div class="max-w-2xl mx-auto">
-                <form id="chat-form" class="flex gap-4">
-                    <input type="text" id="user-input" data-key-placeholder="input_placeholder" 
-                           placeholder="输入请求..." 
-                           class="flex-grow p-4 rounded-full border border-slate-300 focus:ring-2 focus:ring-blue-500 shadow-md outline-none">
-                    <button type="submit" class="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all">
-                        <i data-lucide="send" class="w-6 h-6"></i>
-                    </button>
-                </form>
-            </div>
+    <div class="fixed bottom-0 left-0 right-0 p-12 z-50">
+        <div class="max-w-xl mx-auto flex gap-6 items-center glass-card p-3 rounded-full">
+            <input type="text" id="user-input" class="flex-grow bg-transparent text-white px-6 py-2 outline-none placeholder:text-white/20 text-sm tracking-widest" placeholder="描述你内心的困惑...">
+            <button id="send-btn" class="text-white/40 hover:text-white transition-colors p-2">
+                <i data-lucide="arrow-up-circle" class="w-8 h-8"></i>
+            </button>
         </div>
     </div>
 
-    <div id="instructions-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-        <div class="bg-white w-full max-w-sm rounded-[3rem] p-8 relative">
-            <button onclick="toggleInstructions(false)" class="absolute top-6 right-6 text-slate-400"><i data-lucide="x"></i></button>
-            <div class="text-center mb-8">
-                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="download" class="text-blue-600 w-8 h-8"></i></div>
-                <h3 class="text-2xl font-black" data-key="how_to_title">Add to Home Screen</h3>
-            </div>
-            <button onclick="toggleInstructions(false)" data-key="how_to_got_it" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-xl active:scale-95 transition-all">GOT IT!</button>
+    <div id="fortune-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
+        <div class="max-w-md w-full text-center">
+            <div class="text-white/20 mb-12 tracking-[1em] text-xs uppercase">星河的启示</div>
+            <p id="fortune-text" class="reveal-text text-2xl font-light leading-relaxed text-white/90 mb-16 tracking-widest px-4"></p>
+            <button onclick="closeFortune()" class="text-white/30 hover:text-white text-xs tracking-[0.4em] uppercase transition-all">
+                [ 闭上双眼 ]
+            </button>
         </div>
     </div>
 
     <script>
-        // === 语言与数据 (保持不变) ===
-        const translations = {
-            zh: { nav_subtitle: "本地知情者", tab_ai: "AI 推荐", tab_guides: "攻略合集", ai_chat_title: "Leyes AI 聊天", ai_chat_greeting: "您好！我是您在上海的美食向导AI。告诉我您想吃什么：", input_placeholder: "在此输入您的请求 (例如：“酒店附近的最佳面馆”)", save_prompt_title: "保存 Leyes 到桌面", save_prompt_subtitle: "一键访问，轻松旅行", save_prompt_button: "如何操作？", how_to_title: "添加到主屏幕", how_to_got_it: "明白了！" },
-            en: { nav_subtitle: "Local Insider", tab_ai: "AI Recommender", tab_guides: "Curated Guides", ai_chat_title: "Leyes AI Chat", ai_chat_greeting: "Hello! I'm your local guide AI for Shanghai cuisine. Tell me what you're craving:", input_placeholder: "Type your request here (e.g., 'Best noodles near my hotel')", save_prompt_title: "Save Leyes to Desktop", save_prompt_subtitle: "One-tap access for your trip", save_prompt_button: "How?", how_to_title: "Add to Home Screen", how_to_got_it: "GOT IT!" },
-            ja: { nav_subtitle: "ローカルインサイダー", tab_ai: "AIのおすすめ", tab_guides: "厳選ガイド", ai_chat_title: "Leyes AIチャット", ai_chat_greeting: "こんにちは！私は上海グルメのローカルAIガイドです。食べたいものを教えてください：", input_placeholder: "ここにリクエストを入力してください", save_prompt_title: "Leyesをデスクトップに保存", save_prompt_subtitle: "タップ一つでアクセス", save_prompt_button: "方法", how_to_title: "ホーム画面に追加", how_to_got_it: "了解しました！" },
-            ko: { nav_subtitle: "현지 내부자", tab_ai: "AI 추천", tab_guides: "엄선 가이드", ai_chat_title: "Leyes AI 채팅", ai_chat_greeting: "안녕하세요! 상하이 미식 가이드 AI입니다. 먹고 싶은 것을 알려주세요:", input_placeholder: "여기에 요청을 입력하세요", save_prompt_title: "Leyes를 데스크톱에 저장", save_prompt_subtitle: "원터치 액세스", save_prompt_button: "방법", how_to_title: "홈 화면에 추가", how_to_got_it: "알겠습니다！" }
-        };
-        let currentLang = 'zh';
+        let scene, camera, renderer, particles, mouse = new THREE.Vector2(), targetMouse = new THREE.Vector2();
+        const PARTICLE_COUNT = 12000;
 
-        const guidesData = [
-            { id: 'food_noodles', name: { zh: "老上海的十碗面", en: "Ten Classic Shanghai Noodles", ja: "上海の伝統的な麺料理10選", ko: "상하이 10대 전통 국수" }, category: { zh: "本地经典", en: "Local Classics", ja: "ローカル名物", ko: "현지 클래식" }, description: { zh: "精选十家本地人从小吃到大的面馆，一口入魂。", en: "Ten noodle shops locals swear by.", ja: "地元民が愛する面屋10選。", ko: "현지인들의 맛집 10곳。" }, image: "https://images.unsplash.com/photo-1547372076-4d0092306915?w=400", color: "bg-red-600", colorLight: "bg-red-100" },
-            { id: 'food_cafe', name: { zh: "法租界咖啡地图", en: "French Concession Cafe Map", ja: "フランス租界カフェマップ", ko: "프랑스 조계지 카페 지도" }, category: { zh: "咖啡指南", en: "Cafe Guide", ja: "カフェガイド", ko: "카페 가이드" }, description: { zh: "梧桐树下的精品咖啡店，享受优雅的午后时光。", en: "Boutique cafes under the parasol trees.", ja: "おしゃれなカフェで優雅な午後を。", ko: "플라타너스 나무 아래 부티크 카페。" }, image: "https://images.unsplash.com/photo-1596707325257-25e1740b2f5b?w=400", color: "bg-amber-600", colorLight: "bg-amber-100" }
-        ];
-
-        // === 核心逻辑修改 ===
-
-        function setLanguage(lang) {
-            currentLang = lang;
-            document.querySelectorAll('[data-key]').forEach(el => {
-                const key = el.getAttribute('data-key');
-                if (translations[lang][key]) el.innerHTML = translations[lang][key];
-            });
-            document.querySelectorAll('[data-key-placeholder]').forEach(el => {
-                const key = el.getAttribute('data-key-placeholder');
-                if (translations[lang][key]) el.placeholder = translations[lang][key];
-            });
-            renderGuides();
+        // 核心：保留之前最满意的“毛玻璃圆形发光贴图”生成函数
+        function createGlowTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+            gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 64, 64);
+            return new THREE.CanvasTexture(canvas);
         }
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('border-blue-600', 'text-blue-600'));
-            
-            document.getElementById(`content-${tabName}`).classList.remove('hidden');
-            document.getElementById(`tab-${tabName}`).classList.add('border-blue-600', 'text-blue-600');
-            
-            document.getElementById('chat-input-area-fixed').style.display = (tabName === 'ai' ? 'block' : 'none');
-        }
+        function initThree() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 6;
 
-        function appendMessage(text, sender, isLoading = false) {
-            const chatHistory = document.getElementById('chat-history');
-            const msgDiv = document.createElement('div');
-            const baseClass = 'max-w-[80%] p-4 rounded-xl shadow-md animate-slide-up';
-            
-            if (sender === 'user') {
-                msgDiv.className = `${baseClass} bg-blue-500 text-white ml-auto rounded-br-none`;
-                msgDiv.textContent = text;
-            } else {
-                msgDiv.className = `${baseClass} bg-white text-slate-800 rounded-tl-none`;
-                msgDiv.innerHTML = isLoading ? '<div class="animate-pulse">...</div>' : text;
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            const geo = new THREE.BufferGeometry();
+            const pos = new Float32Array(PARTICLE_COUNT * 3);
+            const colors = new Float32Array(PARTICLE_COUNT * 3);
+            const originalColors = new Float32Array(PARTICLE_COUNT * 3);
+
+            // 核心：保留色彩丰富的“胶质色彩盘”
+            const palette = [
+                new THREE.Color('#ffffff'), // 碎钻银
+                new THREE.Color('#93c5fd'), // 淡蓝
+                new THREE.Color('#c084fc'), // 极光紫
+                new THREE.Color('#99f6e4'), // 薄荷绿
+                new THREE.Color('#f9a8d4')  // 肉粉
+            ];
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                pos[i*3] = (Math.random() - 0.5) * 18;
+                pos[i*3+1] = (Math.random() - 0.5) * 18;
+                pos[i*3+2] = (Math.random() - 0.5) * 8;
+                const col = palette[Math.floor(Math.random() * palette.length)];
+                colors[i*3] = originalColors[i*3] = col.r;
+                colors[i*3+1] = originalColors[i*3+1] = col.g;
+                colors[i*3+2] = originalColors[i*3+2] = col.b;
             }
 
-            chatHistory.appendChild(msgDiv);
-            
-            // 🌟 智能滚动：只有当用户本来就在底部时才滚动 🌟
-            const isScrolledToBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
-            if (isScrolledToBottom) {
-                msgDiv.scrollIntoView({ behavior: 'smooth' });
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.setAttribute('originalColor', new THREE.BufferAttribute(originalColors, 3));
+
+            const mat = new THREE.PointsMaterial({
+                size: 0.04,
+                map: createGlowTexture(),
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.7,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                sizeAttenuation: true
+            });
+
+            particles = new THREE.Points(geo, mat);
+            scene.add(particles);
+
+            window.addEventListener('mousemove', (e) => {
+                targetMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                targetMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            mouse.lerp(targetMouse, 0.03); // 保留丝滑的胶质粘滞交互感
+
+            const positions = particles.geometry.attributes.position.array;
+            const colors = particles.geometry.attributes.color.array;
+            const originals = particles.geometry.attributes.originalColor.array;
+            const time = Date.now() * 0.0004;
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const i3 = i * 3;
+                // 胶质波动
+                positions[i3] += Math.sin(time + i) * 0.0005;
+                positions[i3+1] += Math.cos(time + i) * 0.0005;
+
+                // 细闪闪烁逻辑
+                const flicker = Math.sin(time * 8 + i) > 0.9 ? 1.5 : 1.0;
+                colors[i3] = originals[i3] * flicker;
+                colors[i3+1] = originals[i3+1] * flicker;
+                colors[i3+2] = originals[i3+2] * flicker;
+
+                // 物理碰撞避让
+                const dx = positions[i3] - (mouse.x * 6);
+                const dy = positions[i3+1] - (mouse.y * 4);
+                const distSq = dx*dx + dy*dy;
+                if (distSq < 2) {
+                    const dist = Math.sqrt(distSq);
+                    const force = (1.4 - dist) / 1.4;
+                    positions[i3] += dx * force * 0.015;
+                    positions[i3+1] += dy * force * 0.015;
+                }
             }
-            return msgDiv;
+            particles.geometry.attributes.position.needsUpdate = true;
+            particles.geometry.attributes.color.needsUpdate = true;
+            particles.rotation.y += 0.0004;
+            renderer.render(scene, camera);
         }
 
-        function formatAiResponse(text) {
-            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            return text.replace(/(\r\n|\n\r|\n|\r)/g, '<br>');
-        }
-
-        async function streamAiResponse(userMessage) {
-            const historyElement = document.getElementById('chat-history');
-            const loadingAnim = document.getElementById('loading-animation-container');
-            
-            // 1. 显示 5 秒动画
-            loadingAnim.classList.remove('hidden');
-            let animationCleared = false;
-            const animTimer = setTimeout(() => {
-                loadingAnim.classList.add('hidden');
-                animationCleared = true;
-            }, 5000);
-
-            let aiMessageDiv = null;
-            let accumulatedText = '';
+        // 转型答案之书的逻辑
+        async function askTheUniverse() {
+            const modal = document.getElementById('fortune-modal');
+            const txt = document.getElementById('fortune-text');
+            modal.classList.remove('hidden');
+            txt.innerText = "冥想中...";
 
             try {
-                const response = await fetch('/api/chat', {
+                const res = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userMessage, language: currentLang }),
+                    body: JSON.stringify({ 
+                        message: "作为《答案之书》，请给出一个富有禅意、简短（10字内）的回答，用于解开内心的困惑。例如：‘顺其自然’、‘此刻即是终点’、‘向内寻求’。", 
+                        language: 'zh' 
+                    }),
                 });
-
-                if (!response.ok) throw new Error('Network error');
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder("utf-8");
-                let buffer = '';
-
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-
-                    // 收到数据流即刻停止动画（如果 5 秒还没到）
-                    if (!animationCleared) {
-                        clearTimeout(animTimer);
-                        loadingAnim.classList.add('hidden');
-                        animationCleared = true;
-                    }
-
-                    // 第一次收到数据时创建消息气泡
-                    if (!aiMessageDiv) {
-                        aiMessageDiv = appendMessage('', 'ai');
-                    }
-
-                    buffer += decoder.decode(value, { stream: true });
-                    let lines = buffer.split('\n');
-                    buffer = lines.pop();
-
+                const reader = res.body.getReader();
+                let fullText = "";
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if(done) break;
+                    const chunk = new TextDecoder().decode(value);
+                    const lines = chunk.split('\n');
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
                             const data = JSON.parse(line.substring(6));
-                            if (data.text) {
-                                accumulatedText += data.text;
-                                aiMessageDiv.innerHTML = formatAiResponse(accumulatedText);
-                                
-                                // 🌟 接收流时智能滚动 🌟
-                                const isScrolledToBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 150;
-                                if (isScrolledToBottom) {
-                                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' });
-                                }
-                            }
+                            if (data.text) { fullText += data.text; txt.innerText = fullText; }
                         }
                     }
                 }
-            } catch (error) {
-                appendMessage('抱歉，发生了错误。', 'ai');
-            } finally {
-                loadingAnim.classList.add('hidden');
-                document.getElementById('user-input').disabled = false;
-                lucide.createIcons();
-            }
+            } catch (e) { txt.innerText = "时机未到，请再次叩问。"; }
         }
 
-        document.getElementById('chat-form').addEventListener('submit', function(e) {
-            e.preventDefault();
+        function closeFortune() { document.getElementById('fortune-modal').classList.add('hidden'); }
+
+        document.getElementById('send-btn').onclick = () => {
             const input = document.getElementById('user-input');
-            const msg = input.value.trim();
-            if (msg) {
-                document.getElementById('welcome-message-container').classList.add('hidden');
-                appendMessage(msg, 'user');
-                input.value = '';
-                input.disabled = true;
-                streamAiResponse(msg);
+            if (input.value) {
+                const history = document.getElementById('chat-history');
+                history.innerHTML += `<div class="text-white/20 text-xs tracking-[0.3em] uppercase mt-12 mb-2">你</div>
+                                      <div class="text-white/80 font-light tracking-widest mb-8">${input.value}</div>`;
+                input.value = "";
             }
+        };
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        function renderGuides() {
-            const container = document.getElementById('guides-container');
-            container.innerHTML = guidesData.map(guide => `
-                <div class="bg-white rounded-3xl shadow-lg p-6 flex flex-col md:flex-row gap-6 border border-slate-100">
-                    <img src="${guide.image}" class="w-full md:w-48 h-48 object-cover rounded-2xl flex-shrink-0">
-                    <div>
-                        <span class="text-xs font-bold ${guide.color.replace('bg-', 'text-')} px-3 py-1 rounded-full ${guide.colorLight}">${guide.category[currentLang]}</span>
-                        <h4 class="text-2xl font-black mt-2">${guide.name[currentLang]}</h4>
-                        <p class="text-slate-600 mt-1">${guide.description[currentLang]}</p>
-                    </div>
-                </div>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        function toggleInstructions(show) {
-            document.getElementById('instructions-modal').classList.toggle('hidden', !show);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            setLanguage('zh');
-            switchTab('ai');
-            setTimeout(() => {
-                if (!window.matchMedia('(display-mode: standalone)').matches) {
-                    document.getElementById('top-save-prompt').classList.add('show-prompt');
-                }
-            }, 2000);
-        });
+        initThree();
+        animate();
+        lucide.createIcons();
     </script>
 </body>
 </html>
