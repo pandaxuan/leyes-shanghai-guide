@@ -11,25 +11,19 @@
     <style>
         body { margin: 0; background: #000205; color: white; overflow-x: hidden; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
         #canvas-container { position: fixed; inset: 0; z-index: 0; }
-        
         #main-ui { position: relative; z-index: 10; pointer-events: none; }
         #main-ui * { pointer-events: auto; }
-        
-        /* 继承之前的超模糊玻璃质感 */
         .glass-card {
             background: rgba(255, 255, 255, 0.01);
             backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
         }
-
-        /* 答案出现的仪式感动画 */
         @keyframes answer-reveal {
             from { opacity: 0; transform: scale(0.9) translateY(10px); filter: blur(10px); }
             to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
         }
         .reveal-text { animation: answer-reveal 1.5s ease-out forwards; }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -49,7 +43,6 @@
             <h2 id="hero-title" class="text-4xl font-extralight tracking-[0.5em] mb-4 text-white/90">答案之书</h2>
             <p class="text-white/30 tracking-widest text-sm uppercase">在碎钻星河中找到你的必然</p>
         </div>
-
         <div id="chat-history" class="space-y-8 mb-40 no-scrollbar overflow-y-auto max-h-[40vh] px-4 text-left"></div>
     </div>
 
@@ -73,10 +66,12 @@
     </div>
 
     <script>
+        // --- 请在此处填入你的 Render 后端地址 ---
+        const BACKEND_URL = 'https://leyes-server.onrender.com'; // 替换为你的真实地址
+
         let scene, camera, renderer, particles, mouse = new THREE.Vector2(), targetMouse = new THREE.Vector2();
         const PARTICLE_COUNT = 12000;
 
-        // 核心：保留之前最满意的“毛玻璃圆形发光贴图”生成函数
         function createGlowTexture() {
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
@@ -95,7 +90,6 @@
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 6;
-
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -105,15 +99,7 @@
             const pos = new Float32Array(PARTICLE_COUNT * 3);
             const colors = new Float32Array(PARTICLE_COUNT * 3);
             const originalColors = new Float32Array(PARTICLE_COUNT * 3);
-
-            // 核心：保留色彩丰富的“胶质色彩盘”
-            const palette = [
-                new THREE.Color('#ffffff'), // 碎钻银
-                new THREE.Color('#93c5fd'), // 淡蓝
-                new THREE.Color('#c084fc'), // 极光紫
-                new THREE.Color('#99f6e4'), // 薄荷绿
-                new THREE.Color('#f9a8d4')  // 肉粉
-            ];
+            const palette = [new THREE.Color('#ffffff'), new THREE.Color('#93c5fd'), new THREE.Color('#c084fc'), new THREE.Color('#99f6e4'), new THREE.Color('#f9a8d4')];
 
             for (let i = 0; i < PARTICLE_COUNT; i++) {
                 pos[i*3] = (Math.random() - 0.5) * 18;
@@ -128,18 +114,7 @@
             geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
             geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             geo.setAttribute('originalColor', new THREE.BufferAttribute(originalColors, 3));
-
-            const mat = new THREE.PointsMaterial({
-                size: 0.04,
-                map: createGlowTexture(),
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.7,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                sizeAttenuation: true
-            });
-
+            const mat = new THREE.PointsMaterial({ size: 0.04, map: createGlowTexture(), vertexColors: true, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true });
             particles = new THREE.Points(geo, mat);
             scene.add(particles);
 
@@ -151,8 +126,7 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            mouse.lerp(targetMouse, 0.03); // 保留丝滑的胶质粘滞交互感
-
+            mouse.lerp(targetMouse, 0.03);
             const positions = particles.geometry.attributes.position.array;
             const colors = particles.geometry.attributes.color.array;
             const originals = particles.geometry.attributes.originalColor.array;
@@ -160,17 +134,12 @@
 
             for (let i = 0; i < PARTICLE_COUNT; i++) {
                 const i3 = i * 3;
-                // 胶质波动
                 positions[i3] += Math.sin(time + i) * 0.0005;
                 positions[i3+1] += Math.cos(time + i) * 0.0005;
-
-                // 细闪闪烁逻辑
                 const flicker = Math.sin(time * 8 + i) > 0.9 ? 1.5 : 1.0;
                 colors[i3] = originals[i3] * flicker;
                 colors[i3+1] = originals[i3+1] * flicker;
                 colors[i3+2] = originals[i3+2] * flicker;
-
-                // 物理碰撞避让
                 const dx = positions[i3] - (mouse.x * 6);
                 const dy = positions[i3+1] - (mouse.y * 4);
                 const distSq = dx*dx + dy*dy;
@@ -187,7 +156,31 @@
             renderer.render(scene, camera);
         }
 
-        // 转型答案之书的逻辑
+        // 处理流式响应的通用函数
+        async function handleStream(res, element) {
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            element.innerText = "";
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.substring(6));
+                            if (data.text) {
+                                element.innerText += data.text;
+                            }
+                        } catch (e) { console.error("解析错误", e); }
+                    }
+                }
+            }
+        }
+
+        // 顶部“询问星河”按钮
         async function askTheUniverse() {
             const modal = document.getElementById('fortune-modal');
             const txt = document.getElementById('fortune-text');
@@ -195,40 +188,47 @@
             txt.innerText = "冥想中...";
 
             try {
-                const res = await fetch('/api/chat', {
+                const res = await fetch(`${BACKEND_URL}/api/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        message: "作为《答案之书》，请给出一个富有禅意、简短（10字内）的回答，用于解开内心的困惑。例如：‘顺其自然’、‘此刻即是终点’、‘向内寻求’。", 
-                        language: 'zh' 
-                    }),
+                    body: JSON.stringify({ message: "请赐予我一段星河的启示", language: 'zh' }),
                 });
-                const reader = res.body.getReader();
-                let fullText = "";
-                while(true) {
-                    const {done, value} = await reader.read();
-                    if(done) break;
-                    const chunk = new TextDecoder().decode(value);
-                    const lines = chunk.split('\n');
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const data = JSON.parse(line.substring(6));
-                            if (data.text) { fullText += data.text; txt.innerText = fullText; }
-                        }
-                    }
-                }
-            } catch (e) { txt.innerText = "时机未到，请再次叩问。"; }
+                await handleStream(res, txt);
+            } catch (e) { txt.innerText = "时机未到，请再次叩问。"; console.error(e); }
         }
 
         function closeFortune() { document.getElementById('fortune-modal').classList.add('hidden'); }
 
-        document.getElementById('send-btn').onclick = () => {
+        // 输入框“发送”按钮
+        document.getElementById('send-btn').onclick = async () => {
             const input = document.getElementById('user-input');
-            if (input.value) {
-                const history = document.getElementById('chat-history');
-                history.innerHTML += `<div class="text-white/20 text-xs tracking-[0.3em] uppercase mt-12 mb-2">你</div>
-                                      <div class="text-white/80 font-light tracking-widest mb-8">${input.value}</div>`;
-                input.value = "";
+            const message = input.value.trim();
+            if (!message) return;
+
+            const history = document.getElementById('chat-history');
+            
+            // 显示用户消息
+            history.innerHTML += `
+                <div class="text-white/20 text-xs tracking-[0.3em] uppercase mt-12 mb-2">你</div>
+                <div class="text-white/80 font-light tracking-widest mb-8">${message}</div>
+                <div class="text-white/20 text-xs tracking-[0.3em] uppercase mt-4 mb-2">星河</div>
+                <div id="loading-ai" class="text-white/60 font-light tracking-widest mb-8 italic">正在聆听...</div>
+            `;
+            
+            const aiDisplay = document.getElementById('loading-ai');
+            aiDisplay.id = ""; // 移除ID防止重复
+            input.value = "";
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, language: 'zh' }),
+                });
+                await handleStream(res, aiDisplay);
+            } catch (e) {
+                aiDisplay.innerText = "信号在星尘中迷失了...";
+                console.error(e);
             }
         };
 
