@@ -12,23 +12,9 @@
         body { margin: 0; background: #000205; color: white; overflow: hidden; font-family: "PingFang SC", "STHeiti", "Microsoft YaHei", sans-serif; -webkit-tap-highlight-color: transparent; }
         #canvas-container { position: fixed; inset: 0; z-index: 0; }
         
-        #fixed-nav { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            z-index: 50; 
-            pointer-events: none; 
-        }
+        #fixed-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; pointer-events: none; }
 
-        #main-ui { 
-            position: relative; 
-            z-index: 10; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column;
-            pointer-events: none;
-        }
+        #main-ui { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; pointer-events: none; }
 
         #chat-history { 
             flex-grow: 1;
@@ -59,12 +45,20 @@
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
+        /* 核心修复：修正字间距导致的重心偏移 */
+        .center-tracking {
+            padding-left: 0.8em; /* 必须与 tracking 数值一致以实现绝对居中 */
+        }
+
         @media (max-width: 640px) {
             #chat-history { margin-top: 70px; margin-bottom: 90px; }
-            /* 移动端标题更醒目 */
-            .mobile-title { font-size: 2.5rem !important; line-height: 1.2; letter-spacing: 0.6em !important; }
+            .mobile-title { 
+                font-size: 2.2rem !important; 
+                line-height: 1.2; 
+                letter-spacing: 0.6em !important; 
+                padding-left: 0.6em !important; /* 移动端同步修正 */
+            }
             .mobile-text { font-size: 1rem !important; font-weight: 300 !important; color: rgba(255,255,255,0.9) !important; }
-            .mobile-label { font-size: 11px !important; color: rgba(255,255,255,0.3) !important; }
         }
     </style>
 </head>
@@ -85,14 +79,13 @@
         <div id="chat-history" class="space-y-12 no-scrollbar max-w-2xl mx-auto w-full">
             
             <div class="text-center pt-24 pb-20 sm:pt-32 sm:pb-32 ethereal-text">
-                <h2 class="text-3xl sm:text-5xl font-thin tracking-[0.8em] sm:tracking-[1.2em] mb-8 text-white/80 mobile-title">凝望星河</h2>
+                <h2 class="text-3xl sm:text-5xl font-thin tracking-[0.8em] sm:tracking-[1.2em] mb-8 text-white/80 mobile-title center-tracking">凝望星河</h2>
                 <div class="flex justify-center items-center gap-4 px-4">
                     <div class="h-[1px] w-6 bg-white/20"></div>
                     <p class="text-white/30 tracking-[0.5em] text-[10px] sm:text-xs uppercase">在碎钻星河中找到你的必然</p>
                     <div class="h-[1px] w-6 bg-white/20"></div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -118,7 +111,6 @@
     <script>
         const BACKEND_URL = 'https://leyes-shanghai-guide.onrender.com';
         let scene, camera, renderer, particles, mouse = new THREE.Vector2(), targetMouse = new THREE.Vector2();
-        // 手机端粒子体感更大更亮
         const PARTICLE_COUNT = window.innerWidth < 640 ? 4500 : 12000;
 
         function createGlowTexture() {
@@ -148,7 +140,6 @@
             const pos = new Float32Array(PARTICLE_COUNT * 3);
             const colors = new Float32Array(PARTICLE_COUNT * 3);
             const originalColors = new Float32Array(PARTICLE_COUNT * 3);
-            // 增加亮色权重
             const palette = [new THREE.Color('#ffffff'), new THREE.Color('#ffffff'), new THREE.Color('#bae6fd'), new THREE.Color('#e9d5ff')];
 
             for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -165,7 +156,6 @@
             geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             geo.setAttribute('originalColor', new THREE.BufferAttribute(originalColors, 3));
             const mat = new THREE.PointsMaterial({ 
-                // 显著调大手机端粒子尺寸
                 size: window.innerWidth < 640 ? 0.08 : 0.035, 
                 map: createGlowTexture(), 
                 vertexColors: true, 
@@ -267,9 +257,9 @@
             const history = document.getElementById('chat-history');
             
             history.innerHTML += `
-                <div class="text-white/20 text-[10px] sm:text-[9px] tracking-[0.4em] uppercase mt-4 mb-2 mobile-label">叩问</div>
+                <div class="text-white/20 text-[10px] sm:text-[9px] tracking-[0.4em] uppercase mt-4 mb-2 mobile-label center-tracking">叩问</div>
                 <div class="text-white/80 font-thin text-base sm:text-base tracking-[0.1em] mb-10 mobile-text">${message}</div>
-                <div class="text-white/20 text-[10px] sm:text-[9px] tracking-[0.4em] uppercase mt-4 mb-2 mobile-label">星响</div>
+                <div class="text-white/20 text-[10px] sm:text-[9px] tracking-[0.4em] uppercase mt-4 mb-2 mobile-label center-tracking">星响</div>
                 <div id="loading-ai" class="text-white/50 font-thin text-base sm:text-base tracking-[0.1em] mb-10 italic mobile-text">聆听群星...</div>
             `;
             
@@ -285,9 +275,7 @@
                     body: JSON.stringify({ message: message, language: 'zh' }),
                 });
                 await handleStream(res, aiDisplay);
-            } catch (e) {
-                aiDisplay.innerText = "信号在光年外迷失了...";
-            }
+            } catch (e) { aiDisplay.innerText = "信号在光年外迷失了..."; }
         };
 
         document.getElementById('send-btn').onclick = handleSend;
