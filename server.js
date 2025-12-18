@@ -85,7 +85,7 @@ app.post('/api/chat', async (req, res) => {
             { role: "user", content: message },
         ],
         temperature: 0.9, // 略微降低温度以提高生成速度和稳定性
-        max_tokens: 50,  // 限制最大回复长度
+        max_tokens: 100,  // 限制最大回复长度
         stream: true,     // 启用流式传输
     });
 
