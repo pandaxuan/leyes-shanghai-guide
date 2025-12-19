@@ -700,13 +700,27 @@
 
         // 10秒后询问名字，并告知 AI 不要混淆 Leyes
 
-        setTimeout(() => {
+        // 10秒后直接在界面显示询问，并静默同步给 AI 背景信息
+setTimeout(() => {
+    const container = document.getElementById('message-container');
+    const history = document.getElementById('chat-history');
+    const uniqueId = 'ai-name-request';
 
-            const namePrompt = "任务：温柔地询问旅人的名字。注意：Leyes 是星河的名字。请完整的发送不要修改任何一个字：'你的名字是？这样星河才知道在为谁发光。'";
+    // 1. 直接在 UI 上渲染这段话，不经过 AI 生成
+    container.insertAdjacentHTML('beforeend', `
+        <div class="mb-10 ethereal-text">
+            <div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">星响</div>
+            <div id="${uniqueId}" class="text-white/60 font-thin text-base tracking-[0.1em] mobile-text">你的名字是？这样星河才知道在为谁发光。</div>
+        </div>
+    `);
+    
+    // 滚动到底部
+    history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
 
-            sendToAI(namePrompt, true);
-
-        }, 10000);
+    // 2.【关键】静默告诉 AI 刚才发生了什么，但不显示在界面上
+    // 这样当你输入名字时，AI 的上下文里就知道你在回答“名字”
+    chatContext.push({ role: "assistant", content: "你的名字是？这样星河才知道在为谁发光。" });
+}, 10000);
 
     </script>
 
