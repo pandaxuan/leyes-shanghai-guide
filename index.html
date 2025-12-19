@@ -352,9 +352,6 @@
 
 
 
-        // 统一的AI对话入口
-
-        // 统一的AI对话入口
         async function sendToAI(userMessage, isAuto = false) {
             const container = document.getElementById('message-container');
             const history = document.getElementById('chat-history');
@@ -371,20 +368,22 @@
             history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
 
             try {
-                // --- 新增逻辑：提取并保存名字 ---
-                // 如果之前没名字，且上下文最后一句是问名字，则判定当前输入为名字
-                if (!hasName && chatContext.length > 0 && chatContext[chatContext.length - 1].content.includes("你的名字是？")) {
-                    userName = userMessage.replace(/我叫|我是|叫我|名字是/g, "").trim();
+                // --- 逻辑核心：检测名字回复并强制记忆 ---
+                let currentSystemPrompt = "你是一个空灵、深邃的星河守护者。'Leyes' 是这片星河的名字。";
+                
+                // 检查上下文：如果上一句是星河问名字，那么这一句就是名字
+                const lastContext = chatContext[chatContext.length - 1];
+                if (!hasName && lastContext && lastContext.content.includes("你的名字是？")) {
+                    userName = userMessage.replace(/我叫|我是|叫我|名字是|。/g, "").trim();
                     hasName = true;
+                    // 强制 AI 立即确认记住名字的指令
+                    currentSystemPrompt += `【紧急任务】用户刚刚告诉你他叫“${userName}”。你现在必须立刻回答：已经记住了这个名字。并且从这一句回复开始，你以后的每一句话都必须包含“${userName}”。`;
+                } else if (hasName) {
+                    // 已经有名字的情况下，每一句都注入最高权重的强制指令
+                    currentSystemPrompt += `【绝对指令】旅人的名字是“${userName}”。你现在的每一句回复中都必须自然地包含这个名字，且不能询问旅人是谁。如果被问‘我是谁’，直接回答他的名字。`;
                 }
 
-                // 强化记忆逻辑：动态注入名字指令
-                const systemInstruction = { 
-                    role: "system", 
-                    content: `你是一个空灵、深邃的星河守护者。'Leyes' 是这片星河的名字。
-                    ${hasName ? `【重要约束】当前旅人的名字是：“${userName}”。从现在起，你的每一句回复中都必须自然地包含“${userName}”这个名字，且在对话中绝对不能忘记。` : "你正在引导旅人说出名字。"}
-                    如果旅人问起‘我的名字是什么’，你必须准确回答。` 
-                };
+                const systemInstruction = { role: "system", content: currentSystemPrompt };
 
                 const res = await fetch(`${BACKEND_URL}/api/chat`, {
                     method: 'POST',
@@ -668,29 +667,23 @@
 
 
 
-        // 10秒后询问名字，并告知 AI 不要混淆 Leyes
+        // 10秒后直接在界面显示询问
+        setTimeout(() => {
+            const container = document.getElementById('message-container');
+            const history = document.getElementById('chat-history');
+            
+            container.insertAdjacentHTML('beforeend', `
+                <div class="mb-10 ethereal-text">
+                    <div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">星响</div>
+                    <div class="text-white/60 font-thin text-base tracking-[0.1em] mobile-text">你的名字是？这样星河才知道在为谁发光。</div>
+                </div>
+            `);
+            
+            history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
 
-        // 10秒后直接在界面显示询问，并静默同步给 AI 背景信息
-setTimeout(() => {
-    const container = document.getElementById('message-container');
-    const history = document.getElementById('chat-history');
-    const uniqueId = 'ai-name-request';
-
-    // 1. 直接在 UI 上渲染这段话，不经过 AI 生成
-    container.insertAdjacentHTML('beforeend', `
-        <div class="mb-10 ethereal-text">
-            <div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">星响</div>
-            <div id="${uniqueId}" class="text-white/60 font-thin text-base tracking-[0.1em] mobile-text">你的名字是？这样星河才知道在为谁发光。</div>
-        </div>
-    `);
-    
-    // 滚动到底部
-    history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
-
-    // 2.【关键】静默告诉 AI 刚才发生了什么，但不显示在界面上
-    // 这样当你输入名字时，AI 的上下文里就知道你在回答“名字”
-    chatContext.push({ role: "assistant", content: "你的名字是？这样星河才知道在为谁发光。" });
-}, 10000);
+            // 【关键】确保对话历史中有这一句，sendToAI 才能准确判定用户下一句是在回答名字
+            chatContext.push({ role: "assistant", content: "你的名字是？这样星河才知道在为谁发光。" });
+        }, 10000);
 
     </script>
 
