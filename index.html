@@ -264,7 +264,7 @@
 
             "感叹当下的寂静与星光",
 
-            "探讨旅人沉默背后的思绪",
+            "询问旅人沉默背后的思绪",
 
             "引用一段关于宇宙、时间或孤独的空灵哲思",
 
@@ -280,7 +280,7 @@
 
                 const randomTopic = topics[Math.floor(Math.random() * topics.length)];
 
-                const idlePrompt = `旅人已沉思许久。请作为星河守护者，基于“${randomTopic}”这个主题主动发起一段对话。要求：语言极度优美、空灵，不要重复之前说过的话，字数控制在30字左右。`;
+                const idlePrompt = `旅人已沉思许久。请作为星河守护者，基于“${randomTopic}”这个主题主动发起一段对话，进行一个提问。要求：语言极度优美、空灵，不要重复之前说过的话，字数控制在50字左右。`;
 
                 autoMessageCount++; // 增加计数
 
@@ -392,6 +392,18 @@
 
             try {
 
+                // 核心修改：通过 system 指令让 AI 永久记住名字
+
+                const systemInstruction = { 
+
+                    role: "system", 
+
+                    content: "你是一个空灵、深邃的星河守护者。你要一直记住用户的名字。当用户告诉你名字后，如果后续对话中被提问‘我的名字是什么’或类似问题，你要能直接准确地回答出来。" 
+
+                };
+
+
+
                 const res = await fetch(`${BACKEND_URL}/api/chat`, {
 
                     method: 'POST',
@@ -402,9 +414,9 @@
 
                         message: userMessage, 
 
-                        // 将上下文发送给后端
+                        // 将系统记忆指令、历史上下文以及当前信息合并发送
 
-                        messages: chatContext.concat([{role: "user", content: userMessage}]),
+                        messages: [systemInstruction].concat(chatContext).concat([{role: "user", content: userMessage}]),
 
                         language: 'zh' 
 
@@ -426,7 +438,7 @@
 
                 chatContext.push({role: "assistant", content: finalResponse});
 
-                if (chatContext.length > 16) chatContext = chatContext.slice(-16); // 保持最近8轮对话
+                if (chatContext.length > 20) chatContext = chatContext.slice(-20); // 适当增加上下文长度以增强记忆
 
 
 
@@ -697,6 +709,16 @@
             sendToAI("你好星河，我刚来到这里。请作为守护者欢迎我，并提醒我开启‘星河音乐’。必须包含星河音乐这几个字", true);
 
         }, 3000);
+
+
+
+        // 新增：10秒后（即第一条消息7秒后）询问名字
+
+        setTimeout(() => {
+
+            sendToAI("你的名字是？这样星河才知道在为谁发光。", true);
+
+        }, 10000);
 
     </script>
 
