@@ -114,7 +114,7 @@
         // --- 核心变量：上下文记忆与自动计时器 ---
         let chatContext = []; 
         let idleTimer = null; 
-        const IDLE_TIME = 10000; 
+        const IDLE_TIME = 30000; 
 
         function toggleMusic() {
             if (isPlaying) { bgm.pause(); musicIconContainer.classList.remove('music-spinning'); musicBtn.style.opacity = "0.4"; }
