@@ -108,9 +108,10 @@
 
         }
 
-        @keyframes lavaMove {
-    0% { transform: translate(-20%, -20%) scale(1); }
-    100% { transform: translate(20%, 20%) scale(1.2); }
+        /* 保持你原有的 CSS，在最后添加这些 */
+@keyframes lavaMove {
+    0% { transform: translate(-10%, -10%) scale(1); }
+    100% { transform: translate(10%, 10%) scale(1.1); }
 }
 
 @keyframes sparkle {
@@ -119,9 +120,9 @@
 }
 
 .lava-container {
-    mask-image: radial-gradient(circle at center, black 30%, transparent 100%);
-    /* 增加金属质感 */
-    filter: contrast(150%) brightness(120%);
+    mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+    -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+    filter: contrast(140%) brightness(110%);
 }
 
     </style>
@@ -473,7 +474,37 @@
 
         };
 
-
+// --- 修复：添加缺失的银色熔岩背景函数 ---
+    function applyLavaEffect() {
+        const modal = document.getElementById('fortune-modal');
+        if (!modal) return;
+        let container = modal.querySelector('.lava-container');
+        if (container) container.remove(); 
+        container = document.createElement('div');
+        container.className = 'lava-container';
+        container.style.cssText = `position: absolute; inset: 0; z-index: -1; background: #000; overflow: hidden;`;
+        for (let i = 0; i < 6; i++) {
+            const blob = document.createElement('div');
+            blob.style.cssText = `
+                position: absolute; width: ${Math.random() * 60 + 40}vw; height: ${Math.random() * 60 + 40}vw;
+                background: radial-gradient(circle, rgba(200,200,200,0.15) 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+                left: ${Math.random() * 100 - 50}%; top: ${Math.random() * 100 - 50}%;
+                filter: blur(80px); animation: lavaMove ${20 + i * 5}s infinite alternate ease-in-out;
+            `;
+            container.appendChild(blob);
+        }
+        for (let i = 0; i < 35; i++) {
+            const sparkle = document.createElement('div');
+            sparkle.style.cssText = `
+                position: absolute; width: 2px; height: 2px; background: white;
+                left: ${Math.random() * 100}%; top: ${Math.random() * 100}%;
+                box-shadow: 0 0 10px 1px white; opacity: ${Math.random()};
+                animation: sparkle ${2 + Math.random() * 3}s infinite alternate;
+            `;
+            container.appendChild(sparkle);
+        }
+        modal.insertBefore(container, modal.firstChild);
+    }
 
         async function askTheUniverse() {
             applyLavaEffect(); // 这一行触发银色熔岩背景
@@ -534,12 +565,9 @@
 
 
 
-        // --- 背景渲染逻辑 (Three.js) ---
-
-        let scene, camera, renderer, particles, mouse = new THREE.Vector2(), targetMouse = new THREE.Vector2();
-
-        const PARTICLE_COUNT = window.innerWidth < 640 ? 4500 : 12000;
-
+       // --- 增强：高级视觉背景渲染 (Three.js) ---
+    let scene, camera, renderer, particles, mouse = new THREE.Vector2(), targetMouse = new THREE.Vector2();
+    const PARTICLE_COUNT = window.innerWidth < 640 ? 4500 : 12000;
 
 
         function createGlowTexture() {
@@ -610,8 +638,17 @@
 
             geo.setAttribute('originalColor', new THREE.BufferAttribute(originalColors, 3));
 
-            const mat = new THREE.PointsMaterial({ size: window.innerWidth < 640 ? 0.08 : 0.035, map: createGlowTexture(), vertexColors: true, transparent: true, opacity: window.innerWidth < 640 ? 0.7 : 0.5, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true });
-
+            // --- 视觉优化点 1：粒子变粗 (size: 0.15) ---
+        const mat = new THREE.PointsMaterial({ 
+            size: 0.15, 
+            map: createGlowTexture(), 
+            vertexColors: true, 
+            transparent: true, 
+            opacity: 0.7, 
+            blending: THREE.AdditiveBlending, 
+            depthWrite: false, 
+            sizeAttenuation: true 
+        });
             particles = new THREE.Points(geo, mat);
 
             scene.add(particles);
@@ -630,7 +667,8 @@
 
             requestAnimationFrame(animate);
 
-            mouse.lerp(targetMouse, 0.02);
+            // --- 视觉优化点 2：胶质感平滑度 (lerp: 0.05) ---
+        mouse.lerp(targetMouse, 0.05);
 
             const positions = particles.geometry.attributes.position.array;
 
@@ -650,11 +688,18 @@
 
                 colors[i3] = originals[i3] * flicker; colors[i3+1] = originals[i3+1] * flicker; colors[i3+2] = originals[i3+2] * flicker;
 
-                const dx = positions[i3] - (mouse.x * 6); const dy = positions[i3+1] - (mouse.y * 4);
+                // --- 视觉优化点 3：胶质吸附计算 ---
+            const dx = positions[i3] - (mouse.x * 6); const dy = positions[i3+1] - (mouse.y * 4);
 
                 const distSq = dx*dx + dy*dy;
 
-                if (distSq < 3) { const dist = Math.sqrt(distSq); const force = (1.5 - dist) / 1.5; positions[i3] += dx * force * 0.01; positions[i3+1] += dy * force * 0.01; }
+                if (distSq < 3) { 
+                const dist = Math.sqrt(distSq); 
+                const force = (1.5 - dist) / 1.5; 
+                // 这里的系数 0.025 提供了一种缓慢、粘稠的拉扯感
+                positions[i3] += dx * force * 0.025; 
+                positions[i3+1] += dy * force * 0.025; 
+            }
 
             }
 
