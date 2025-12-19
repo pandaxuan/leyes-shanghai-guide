@@ -126,7 +126,7 @@
         function resetIdleTimer() {
             if (idleTimer) clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                const idlePrompt = "旅人已经凝望星空许久却未曾言语。请基于刚才的对话内容，主动说一句空灵、温柔且富有哲思的短句，引导旅人继续交流，字数控制在30字以内。";
+                const idlePrompt = "旅人已经凝望星空许久却未曾言语。请基于刚才的对话内容，主动说一句空灵、温柔且富有哲思的提问句，引导旅人继续交流，字数控制在30字以内。";
                 sendToAI(idlePrompt, true);
             }, IDLE_TIME);
         }
