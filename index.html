@@ -357,6 +357,11 @@
             const history = document.getElementById('chat-history');
             const uniqueId = 'ai-' + Date.now();
 
+            // 如果不是自动消息，就在 UI 显示用户说的话
+            if (!isAuto) {
+                // 这里已经在 handleSend 里处理了，不用重复
+            }
+
             container.insertAdjacentHTML('beforeend', `
                 <div class="mb-10 ethereal-text">
                     <div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">星响</div>
@@ -368,29 +373,35 @@
             history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
 
             try {
-                // --- 逻辑核心：检测名字回复并强制记忆 ---
-                let currentSystemPrompt = "你是一个空灵、深邃的星河守护者。'Leyes' 是这片星河的名字。";
-                
-                // 检查上下文：如果上一句是星河问名字，那么这一句就是名字
-                const lastContext = chatContext[chatContext.length - 1];
-                if (!hasName && lastContext && lastContext.content.includes("你的名字是？")) {
-                    userName = userMessage.replace(/我叫|我是|叫我|名字是|。/g, "").trim();
-                    hasName = true;
-                    // 强制 AI 立即确认记住名字的指令
-                    currentSystemPrompt += `【紧急任务】用户刚刚告诉你他叫“${userName}”。你现在必须立刻回答：已经记住了这个名字。并且从这一句回复开始，你以后的每一句话都必须包含“${userName}”。`;
-                } else if (hasName) {
-                    // 已经有名字的情况下，每一句都注入最高权重的强制指令
-                    currentSystemPrompt += `【绝对指令】旅人的名字是“${userName}”。你现在的每一句回复中都必须自然地包含这个名字，且不能询问旅人是谁。如果被问‘我是谁’，直接回答他的名字。`;
+                // 1. 自动提取名字逻辑
+                if (!hasName && chatContext.length > 0) {
+                    const lastMsg = chatContext[chatContext.length - 1].content;
+                    if (lastMsg.includes("你的名字是？")) {
+                        userName = userMessage.replace(/我叫|我是|叫我|名字是|。/g, "").trim();
+                        hasName = true;
+                    }
                 }
 
-                const systemInstruction = { role: "system", content: currentSystemPrompt };
+                // 2. 构造强制指令
+                let processedMessage = userMessage;
+                let systemPrompt = "你是一个空灵的星河守护者。Leyes是你的名字。";
+
+                if (hasName) {
+                    // 【核心改动】：在每一条发给 AI 的用户消息后面，强制附带一个隐形指令
+                    processedMessage = `${userMessage} （注意：我是${userName}，请在回复中自然地称呼我的名字，并确认你已记住。）`;
+                    systemPrompt += `当前旅人名字叫“${userName}”。你必须在每一句回复中都包含这个名字。`;
+                }
 
                 const res = await fetch(`${BACKEND_URL}/api/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        message: userMessage, 
-                        messages: [systemInstruction].concat(chatContext).concat([{role: "user", content: userMessage}]),
+                        message: processedMessage, // 发送带有“名字提醒”的消息
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            ...chatContext,
+                            { role: "user", content: processedMessage }
+                        ],
                         language: 'zh' 
                     }),
                 });
@@ -398,7 +409,7 @@
                 const finalResponse = await handleStream(res, aiDisplay);
                 aiDisplay.classList.remove('italic');
 
-                // 更新记忆
+                // 3. 更新记忆（保存干净的对话，不带隐形指令）
                 chatContext.push({role: "user", content: userMessage});
                 chatContext.push({role: "assistant", content: finalResponse});
                 if (chatContext.length > 20) chatContext = chatContext.slice(-20);
@@ -408,7 +419,6 @@
                 aiDisplay.innerText = "信号在光年外迷失了...";
             }
         }
-
 
 
         const handleSend = async () => {
