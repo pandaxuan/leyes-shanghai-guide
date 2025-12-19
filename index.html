@@ -360,16 +360,6 @@
 
 
 
-            // 如果不是静默触发的 Prompt，展示“叩问”
-
-            if (!isAuto) {
-
-                // 这个逻辑已经在 handleSend 里处理了，这里仅处理 AI 响应区域
-
-            }
-
-
-
             container.insertAdjacentHTML('beforeend', `
 
                 <div class="mb-10 ethereal-text">
@@ -392,13 +382,13 @@
 
             try {
 
-                // 核心修改：通过 system 指令让 AI 永久记住名字
+                // 强化记忆逻辑：在 system 指令中明确排除 Leyes 的干扰
 
                 const systemInstruction = { 
 
                     role: "system", 
 
-                    content: "你是一个空灵、深邃的星河守护者。你要一直记住用户的名字。当用户告诉你名字后，如果后续对话中被提问‘我的名字是什么’或类似问题，你要能直接准确地回答出来。" 
+                    content: "你是一个空灵、深邃的星河守护者。'Leyes' 是这片星河的名字，不是旅人的名字。如果旅人告诉你他的名字，请务必将其视为唯一的旅人称呼并永久记住。在后续对话中，如果被提问‘我的名字是什么’，你必须直接、准确地回答出来。" 
 
                 };
 
@@ -413,8 +403,6 @@
                     body: JSON.stringify({ 
 
                         message: userMessage, 
-
-                        // 将系统记忆指令、历史上下文以及当前信息合并发送
 
                         messages: [systemInstruction].concat(chatContext).concat([{role: "user", content: userMessage}]),
 
@@ -438,7 +426,7 @@
 
                 chatContext.push({role: "assistant", content: finalResponse});
 
-                if (chatContext.length > 20) chatContext = chatContext.slice(-20); // 适当增加上下文长度以增强记忆
+                if (chatContext.length > 20) chatContext = chatContext.slice(-20);
 
 
 
@@ -535,8 +523,6 @@
         }
 
 
-
-        // 监听用户输入状态，避免在输入时被打断
 
         document.getElementById('user-input').addEventListener('input', () => {
 
@@ -711,11 +697,16 @@
         }, 3000);
 
 
+
+        // 10秒后询问名字，并告知 AI 不要混淆 Leyes
+
         setTimeout(() => {
-    // 这里的 Prompt 明确告知 AI 不要猜测，必须提问
-    const namePrompt = "请执行这项任务：温柔地询问旅人的名字。注意：Leyes 是这片星河的名字，不是旅人的名字。请直接发送这条不要修改任何字：'你的名字是？这样星河才知道在为谁发光。'";
-    sendToAI(namePrompt, true);
-}, 10000);
+
+            const namePrompt = "任务：温柔地询问旅人的名字。注意：Leyes 是星河的名字。请发送：'你的名字是？这样星河才知道在为谁发光。'";
+
+            sendToAI(namePrompt, true);
+
+        }, 10000);
 
     </script>
 
