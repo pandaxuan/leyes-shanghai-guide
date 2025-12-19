@@ -114,6 +114,8 @@
         // --- 核心变量：上下文记忆与自动计时器 ---
         let chatContext = []; 
         let idleTimer = null; 
+        let autoMessageCount = 0; // 新增：记录主动提问次数
+        const MAX_AUTO_MESSAGES = 10; // 新增：最大限制10次
         const IDLE_TIME = 30000; 
 
         function toggleMusic() {
@@ -125,8 +127,20 @@
         // 重置闲聊计时逻辑
         function resetIdleTimer() {
             if (idleTimer) clearTimeout(idleTimer);
+            if (autoMessageCount >= MAX_AUTO_MESSAGES) return;
             idleTimer = setTimeout(() => {
-                const idlePrompt = "旅人已经凝望星空许久却未曾言语。请基于刚才的对话内容，主动说一句空灵、温柔且富有哲思的提问句，引导旅人继续交流，字数控制在30字以内。";
+                const topics = [
+            "感叹当下的寂静与星光",
+            "探讨旅人沉默背后的思绪",
+            "引用一段关于宇宙、时间或孤独的空灵哲思",
+            "询问旅人此刻是否在听那远古的星声",
+            "观察星云的流动，并分享一种转瞬即逝的美感",
+            "探讨记忆与光年的关系",
+            "温柔地提醒旅人，无论多久，星河都会在此守候"
+                ];
+                const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+                const idlePrompt = `旅人已沉思许久。请作为星河守护者，基于“${randomTopic}”这个主题主动发起一段对话。要求：语言极度优美、空灵，不要重复之前说过的话，字数控制在30字左右。`;
+                autoMessageCount++; // 增加计数
                 sendToAI(idlePrompt, true);
             }, IDLE_TIME);
         }
