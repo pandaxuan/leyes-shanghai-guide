@@ -231,6 +231,8 @@
         let idleTimer = null; 
 
         let autoMessageCount = 0; // 新增：记录主动提问次数
+        let hasName = false; // 新增：是否已获得名字
+        let userName = "";   // 新增：存储用户名字
 
         const MAX_AUTO_MESSAGES = 10; // 新增：最大限制10次
 
@@ -255,6 +257,8 @@
         function resetIdleTimer() {
 
             if (idleTimer) clearTimeout(idleTimer);
+            // 只有在获得名字后，才开启闲聊倒计时
+            if (!hasName || autoMessageCount >= MAX_AUTO_MESSAGES) return;
 
             if (autoMessageCount >= MAX_AUTO_MESSAGES) return;
 
