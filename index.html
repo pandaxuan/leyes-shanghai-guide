@@ -108,6 +108,22 @@
 
         }
 
+        @keyframes lavaMove {
+    0% { transform: translate(-20%, -20%) scale(1); }
+    100% { transform: translate(20%, 20%) scale(1.2); }
+}
+
+@keyframes sparkle {
+    0% { opacity: 0.1; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1.2); }
+}
+
+.lava-container {
+    mask-image: radial-gradient(circle at center, black 30%, transparent 100%);
+    /* 增加金属质感 */
+    filter: contrast(150%) brightness(120%);
+}
+
     </style>
 
 </head>
