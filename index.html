@@ -194,7 +194,7 @@
                 const res = await fetch(`${BACKEND_URL}/api/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: "请赐予我一段星河的启示", language: 'zh' }),
+                    body: JSON.stringify({ message: "请作为这片星河的守护者，为我写一首大约十行的启示之诗。风格要空灵、深邃、带有哲思，字里行间流露对宇宙和生命的凝望，不需要标题，直接开始诗句。", language: 'zh' }),
                 });
                 await handleStream(res, txt);
             } catch (e) { txt.innerText = "星尘漫过，请稍后再试。"; }
