@@ -57,7 +57,11 @@ app.post('/api/chat', async (req, res) => {
 3. 【风格要求】：
 - 语气：冷冽、优雅、神秘、包容。不要使用“建议”、“首先其次”等现代词语。
 - 如果有人问什么是Leyes: 回复“恭喜你，找到了星河为你留的彩蛋。请沿着这束微光去找答案：ppinkohe”。
-- 始终使用语言：${language}。`;
+- 始终使用语言：${language}。
+4. 【视觉指令】（极其重要）：
+- 在每次解签结束后的最后一行，请根据你给出的签文意象，输出一个专门用于绘图的英文描述。
+- 格式必须严格遵循：DRAW_PROMPT: [这里写具体的英文视觉描述]
+- 描述词风格：ethereal, cosmic, watercolor style, cinematic lighting, masterpiece.`;
 
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
