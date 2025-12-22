@@ -231,11 +231,13 @@ let isRitualActive = false; // 标记是否正在进行仪式
     const container = document.getElementById('message-container');
     const history = document.getElementById('chat-history');
     const imageId = 'oracle-' + Date.now();
+    const qualityBoost = "masterpiece, best quality, ultra-detailed, cinematic lighting, ethereal fantasy style, vivid colors, trending on artstation, no text";
+    const refinedPrompt = encodeURIComponent(`${prompt}, ${qualityBoost}`);
 
     // 预处理 Prompt，加上星河滤镜关键词
-    const refinedPrompt = encodeURIComponent(`ethereal cosmic style, ${prompt}, ultra-detailed, deep space nebula background, soft glow`);
+    // const refinedPrompt = encodeURIComponent(`ethereal cosmic style, ${prompt}, ultra-detailed, deep space nebula background, soft glow`);
     // 使用免费接口：https://pollinations.ai/p/[prompt]
-    const imageUrl = `https://pollinations.ai/p/${refinedPrompt}?width=512&height=512&seed=${Math.floor(Math.random()*1000)}&nologo=true`;
+    const imageUrl = `https://pollinations.ai/p/${refinedPrompt}?width=1024&height=1024&seed=${Math.floor(Math.random()*10000)}&nologo=true`;
 
     const html = `
         <div id="${imageId}-container" class="mb-10 ethereal-text" style="animation-delay: 1s">
