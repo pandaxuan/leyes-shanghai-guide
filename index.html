@@ -285,23 +285,22 @@ let isRitualActive = false; // 标记是否正在进行仪式
             history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
 
             try {
-
-                if (!hasName && chatContext.length > 0) {
-
-                    const lastMsg = chatContext[chatContext.length - 1].content;
-
-                    if (lastMsg.includes("你的名字是？")) {
-
-                        userName = userMessage.replace(/我叫|我是|叫我|名字是|。/g, "").trim();
-
-                        hasName = true;
-                        setTimeout(() => {
-                    if (typeof startRitual === 'function') startRitual();
-                }, 2000);
-
-                    }
-
+            // --- 优化后的名字识别逻辑 ---
+            if (!hasName) {
+                // 检查上下文，看看上一个 AI 的话是不是在问名字
+                const lastAIResponse = chatContext.findLast(m => m.role === "assistant")?.content || "";
+                
+                // 只要上个回复包含“名字”二字，且当前不是自动触发的消息
+                if ((lastAIResponse.includes("名字") || lastAIResponse.includes("谁在发光")) && !isAuto) {
+                    userName = userMessage.replace(/我叫|我是|叫我|名字是|。/g, "").trim();
+                    hasName = true;
+                    
+                    // 名字识别成功后，延迟 2 秒启动仪式
+                    setTimeout(() => {
+                        if (typeof startRitual === 'function') startRitual();
+                    }, 2000);
                 }
+            }
 
                 let processedMessage = userMessage;
 
@@ -656,6 +655,7 @@ async function handleFinalQuest(choice) {
             history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
 
             chatContext.push({ role: "assistant", content: "你的名字是？这样星河才知道在为谁发光。" });
+            chatContext.push({ role: "assistant", content: q });
 
         }, 10000);
 
