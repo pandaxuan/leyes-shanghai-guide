@@ -309,7 +309,7 @@ let isRitualActive = false; // 标记是否正在进行仪式
 
                 if (hasName) {
 
-                    processedMessage = `${userMessage} （注意：我是${userName}，请在回复中自然地称呼我的名字，并确认你已记住。）`;
+                    processedMessage = `${userMessage} （注意：我是${userName}，请在回复的开头或结尾自然地称呼旅人的名字）`;
 
                     systemPrompt += `当前旅人名字叫“${userName}”。你必须在每一句回复中都包含这个名字。`;
 
@@ -342,24 +342,33 @@ let isRitualActive = false; // 标记是否正在进行仪式
         }
 
         const handleSend = async () => {
+    const input = document.getElementById('user-input');
+    const message = input.value.trim();
+    if (!message) return;
 
-            const input = document.getElementById('user-input');
+    if (idleTimer) clearTimeout(idleTimer);
 
-            const message = input.value.trim();
+    // --- 核心逻辑：判断是否携带采样数据 ---
+    let finalPrompt = message;
+    
+    // 如果 userChoices 已经存满了题目（4道题），说明这是答完题后的第一次提问
+    if (userChoices.length === ritualQuestions.length) {
+        finalPrompt = `【星辰采样数据】：${userChoices.join('；')}\n【旅人心中所求】：${message}\n请结合以上采样数据，为我进行深度的解签。`;
+        
+        // 发送完后清空采样，防止下次对话还带着这些数据
+        userChoices = []; 
+        // 恢复输入框提示
+        input.placeholder = "把未说完的话，写给星河...";
+    }
 
-            if (!message) return;
-
-            if (idleTimer) clearTimeout(idleTimer);
-
-            const container = document.getElementById('message-container');
-
-            container.insertAdjacentHTML('beforeend', `<div class="mb-10"><div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">叩问</div><div class="text-white/80 font-thin text-base tracking-[0.1em] mobile-text">${message}</div></div>`);
-
-            input.value = "";
-
-            await sendToAI(message);
-
-        };
+    const container = document.getElementById('message-container');
+    container.insertAdjacentHTML('beforeend', `<div class="mb-10"><div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">叩问</div><div class="text-white/80 font-thin text-base tracking-[0.1em] mobile-text">${message}</div></div>`);
+    
+    input.value = "";
+    
+    // 注意：这里传给 AI 的是拼装后的 finalPrompt
+    await sendToAI(finalPrompt);
+};
 
         async function askTheUniverse() {
 
