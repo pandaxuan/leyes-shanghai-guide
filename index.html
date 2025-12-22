@@ -159,6 +159,16 @@
         const musicBtn = document.getElementById('music-btn');
 
         const musicIconContainer = document.getElementById('music-icon-container');
+        const ritualQuestions = [
+    { q: "深渊中有一束光，你认为那是：", a: ["过往的倒影", "神祇的垂怜", "出口的暗示", "自我的燃烧"] },
+    { q: "若能带走一种声音，你会选择：", a: ["落雨敲击青石", "爱人的呢喃", "宇宙的寂静", "远行的风声"] },
+    { q: "此行终点，你最想寻回：", a: ["最初的勇气", "遗失的姓名", "不灭的灯火", "无名的自由"] },
+    { q: "若星河有颜色，此刻你眼中是：", a: ["幽邃的蓝", "炽热的白", "死寂的黑", "虚无的银"] }
+];
+
+let currentStep = 0;
+let userChoices = [];
+let isRitualActive = false; // 标记是否正在进行仪式
 
         let isPlaying = false;
 
@@ -285,6 +295,9 @@
                         userName = userMessage.replace(/我叫|我是|叫我|名字是|。/g, "").trim();
 
                         hasName = true;
+                        setTimeout(() => {
+                    if (typeof startRitual === 'function') startRitual();
+                }, 2000);
 
                     }
 
@@ -515,6 +528,64 @@
             renderer.render(scene, camera);
 
         }
+        function startRitual() {
+    isRitualActive = true;
+    currentStep = 0;
+    userChoices = [];
+    showNextQuestion();
+}
+
+function showNextQuestion() {
+    const container = document.getElementById('message-container');
+    const history = document.getElementById('chat-history');
+    const qObj = ritualQuestions[currentStep];
+
+    // 生成 AI 的提问样式
+    const html = `
+        <div class="mb-10 ethereal-text ritual-step">
+            <div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">星采样 ${currentStep + 1}/${ritualQuestions.length}</div>
+            <div class="text-white/60 font-thin text-base tracking-[0.1em] mb-4">${qObj.q}</div>
+            <div class="flex flex-wrap gap-2">
+                ${qObj.a.map(choice => `
+                    <button onclick="handleChoice('${choice}')" 
+                            class="glass-card px-4 py-2 rounded-full text-[11px] text-white/40 border border-white/5 hover:text-white hover:border-white/20 transition-all">
+                        ${choice}
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', html);
+    history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
+}
+
+function handleChoice(choice) {
+    userChoices.push(`【${ritualQuestions[currentStep].q}】选择了：${choice}`);
+    
+    // 移除刚刚点击过的按钮组，保持界面整洁（可选）
+    const lastRitual = document.querySelector('.ritual-step:last-child .flex');
+    if (lastRitual) lastRitual.innerHTML = `<span class="text-white/20 text-[11px]">已选择：${choice}</span>`;
+
+    currentStep++;
+    if (currentStep < ritualQuestions.length) {
+        showNextQuestion();
+    } else {
+        finishRitual();
+    }
+}
+
+function finishRitual() {
+    isRitualActive = false;
+    const container = document.getElementById('message-container');
+    container.insertAdjacentHTML('beforeend', `
+        <div class="mb-10 ethereal-text">
+            <div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">星响</div>
+            <div class="text-white/60 font-thin text-base tracking-[0.1em] italic">采样已完成。${userName}，此刻你心中所求为何？请告诉我，我将为你解签。</div>
+        </div>
+    `);
+    document.getElementById('user-input').placeholder = "输入你的困惑或求问的方向...";
+}
 
         window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
 
