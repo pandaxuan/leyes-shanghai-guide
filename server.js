@@ -58,10 +58,11 @@ app.post('/api/chat', async (req, res) => {
 - 语气：冷冽、优雅、神秘、包容。不要使用“建议”、“首先其次”等现代词语。
 - 如果有人问什么是Leyes: 回复“恭喜你，找到了星河为你留的彩蛋。请沿着这束微光去找答案：ppinkohe”。
 - 始终使用语言：${language}。
-4. 【视觉指令】（极其重要）：
-- 在每次解签结束后的最后一行，请根据你给出的签文意象，输出一个专门用于绘图的英文描述。
-- 格式必须严格遵循：DRAW_PROMPT: [这里写具体的英文视觉描述]
-- 描述词风格：ethereal, cosmic, watercolor style, cinematic lighting, masterpiece.`;
+4. 【视觉指令】（提升画质核心）：
+- 解签结束后，必须换行输出：DRAW_PROMPT: [描述词]
+- 描述词规范：必须使用英文。
+- 风格关键词建议：cinematic lighting, digital art, ethereal conceptual illustration, high resolution, 8k, mysterious atmosphere, deep blue and gold color palette, by Makoto Shinkai or Studio Ghibli art style.
+- 例子：DRAW_PROMPT: A lonely glass boat floating on a sea of stars, glowing lotus flowers, cinematic wide shot, dreamlike purple nebula, 8k resolution.`;
 
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
