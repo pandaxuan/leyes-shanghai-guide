@@ -59,6 +59,15 @@
         @keyframes sparkle { 0% { opacity: 0.1; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
 
         .lava-container { mask-image: radial-gradient(circle at center, black 30%, transparent 100%); filter: contrast(150%) brightness(120%); }
+        /* 图片呼吸感动画 */
+.oracle-image-load {
+    animation: image-bloom 4s ease-out forwards;
+}
+
+@keyframes image-bloom {
+    from { filter: blur(20px) brightness(0); transform: scale(1.1); }
+    to { filter: blur(0) brightness(1); transform: scale(1); }
+}
 
     </style>
 
@@ -218,57 +227,93 @@ let isRitualActive = false; // 标记是否正在进行仪式
 
         }
 
+        function showVisualOracle(prompt) {
+    const container = document.getElementById('message-container');
+    const history = document.getElementById('chat-history');
+    const imageId = 'oracle-' + Date.now();
+
+    // 预处理 Prompt，加上星河滤镜关键词
+    const refinedPrompt = encodeURIComponent(`ethereal cosmic style, ${prompt}, ultra-detailed, deep space nebula background, soft glow`);
+    // 使用免费接口：https://pollinations.ai/p/[prompt]
+    const imageUrl = `https://pollinations.ai/p/${refinedPrompt}?width=512&height=512&seed=${Math.floor(Math.random()*1000)}&nologo=true`;
+
+    const html = `
+        <div id="${imageId}-container" class="mb-10 ethereal-text" style="animation-delay: 1s">
+            <div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-4 center-tracking">星象结晶</div>
+            <div class="relative w-full aspect-square max-w-sm mx-auto overflow-hidden rounded-2xl glass-card border border-white/10 shadow-2xl shadow-blue-900/20">
+                <img id="${imageId}" 
+                     class="w-full h-full object-cover opacity-0 transition-opacity duration-[3000ms]" 
+                     src="${imageUrl}" 
+                     onload="this.style.opacity='1'" />
+                <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 to-transparent"></div>
+            </div>
+        </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', html);
+    
+    setTimeout(() => {
+        history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
+    }, 500);
+}
+
         async function handleStream(res, element) {
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    const history = document.getElementById('chat-history');
+    let fullContent = ""; 
+    let displayContent = ""; // 用于实际显示的文本
+    element.innerText = "";
 
-            const reader = res.body.getReader();
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
 
-            const decoder = new TextDecoder();
+        for (const line of lines) {
+            if (line.startsWith('data: ')) {
+                try {
+                    const jsonStr = line.substring(6).trim();
+                    if (!jsonStr) continue;
+                    const data = JSON.parse(jsonStr);
+                    
+                    if (data.text) {
+                        fullContent += data.text;
 
-            const history = document.getElementById('chat-history');
-
-            let fullContent = ""; 
-
-            element.innerText = "";
-
-            while (true) {
-
-                const { done, value } = await reader.read();
-
-                if (done) break;
-
-                const chunk = decoder.decode(value);
-
-                const lines = chunk.split('\n');
-
-                for (const line of lines) {
-
-                    if (line.startsWith('data: ')) {
-
-                        try {
-
-                            const data = JSON.parse(line.substring(6));
-
-                            if (data.text) {
-
-                                element.innerText += data.text;
-
-                                fullContent += data.text;
-
-                                history.scrollTo({ top: history.scrollHeight, behavior: 'auto' });
-
-                            }
-
-                        } catch (e) {}
-
+                        // 🌟 核心优化：检查是否已经开始输出绘图指令
+                        if (fullContent.includes("DRAW_PROMPT:")) {
+                            // 将指令前的文字正常显示
+                            const parts = fullContent.split("DRAW_PROMPT:");
+                            displayContent = parts[0];
+                            element.innerText = displayContent;
+                            
+                            // 如果流已经结束（由后端控制或检测到完整 prompt）
+                            // 实际图片生成将在 fullContent 最终完成后触发
+                        } else {
+                            displayContent += data.text;
+                            element.innerText = displayContent;
+                        }
+                        
+                        history.scrollTo({ top: history.scrollHeight, behavior: 'auto' });
                     }
-
+                    
+                    if (data.end) {
+                        // 🌟 解签结束，检查是否有绘图需求
+                        if (fullContent.includes("DRAW_PROMPT:")) {
+                            const prompt = fullContent.split("DRAW_PROMPT:")[1].trim();
+                            // 这里的 prompt 即使带有标点也没关系，showVisualOracle 会处理
+                            showVisualOracle(prompt);
+                        }
+                    }
+                } catch (e) {
+                    console.error("解析流数据出错", e);
                 }
-
             }
-
-            return fullContent;
-
         }
+    }
+    return fullContent;
+}
 
         async function sendToAI(userMessage, isAuto = false) {
 
@@ -655,7 +700,7 @@ async function handleFinalQuest(choice) {
             history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
 
             chatContext.push({ role: "assistant", content: "你的名字是？这样星河才知道在为谁发光。" });
-            chatContext.push({ role: "assistant", content: q });
+            
 
         }, 10000);
 
