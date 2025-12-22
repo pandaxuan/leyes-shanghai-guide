@@ -549,15 +549,14 @@ function showNextQuestion() {
     const history = document.getElementById('chat-history');
     const qObj = ritualQuestions[currentStep];
 
-    // 生成 AI 的提问样式
     const html = `
         <div class="mb-10 ethereal-text ritual-step">
             <div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">星采样 ${currentStep + 1}/${ritualQuestions.length}</div>
-            <div class="text-white/60 font-thin text-base tracking-[0.1em] mb-4">${qObj.q}</div>
-            <div class="flex flex-wrap gap-2">
+            <div class="text-white/80 font-light text-lg tracking-[0.1em] mb-6">${qObj.q}</div>
+            <div class="flex flex-wrap gap-3">
                 ${qObj.a.map(choice => `
                     <button onclick="handleChoice('${choice}')" 
-                            class="glass-card px-4 py-2 rounded-full text-[11px] text-white/40 border border-white/5 hover:text-white hover:border-white/20 transition-all">
+                            class="glass-card px-6 py-3 rounded-full text-[13px] text-white/80 bg-white/5 border border-white/10 hover:bg-white/20 hover:text-white hover:border-white/40 transition-all tracking-[0.1em]">
                         ${choice}
                     </button>
                 `).join('')}
@@ -566,9 +565,12 @@ function showNextQuestion() {
     `;
     
     container.insertAdjacentHTML('beforeend', html);
-    history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
+    
+    // 关键优化：延时滚动，确保内容渲染后再滚到底部
+    setTimeout(() => {
+        history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
+    }, 100);
 }
-
 function handleChoice(choice) {
     userChoices.push(`【${ritualQuestions[currentStep].q}】选择了：${choice}`);
     
@@ -584,16 +586,53 @@ function handleChoice(choice) {
     }
 }
 
+// 修改 finishRitual 函数，把输入变成选择
 function finishRitual() {
     isRitualActive = false;
     const container = document.getElementById('message-container');
-    container.insertAdjacentHTML('beforeend', `
+    const history = document.getElementById('chat-history');
+
+    const html = `
         <div class="mb-10 ethereal-text">
             <div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">星响</div>
-            <div class="text-white/60 font-thin text-base tracking-[0.1em] italic">采样已完成。${userName}，此刻你心中所求为何？请告诉我，我将为你解签。</div>
+            <div class="text-white/60 font-thin text-base tracking-[0.1em] italic mb-6">采样已完成。${userName}，此刻你求问的方向为何？</div>
+            <div class="flex flex-wrap gap-3">
+                ${["事业展望", "情感羁绊", "身心健康", "自我成长"].map(choice => `
+                    <button onclick="handleFinalQuest('${choice}')" 
+                            class="glass-card px-6 py-3 rounded-full text-[14px] text-white/90 bg-white/10 border border-white/20 hover:bg-white/20 hover:border-white/40 transition-all font-light tracking-[0.1em]">
+                        ${choice}
+                    </button>
+                `).join('')}
+            </div>
         </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', html);
+    // 强制滚动到底部
+    setTimeout(() => {
+        history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
+    }, 100);
+}
+
+// 新增：处理最后方向选择的函数
+async function handleFinalQuest(choice) {
+    const container = document.getElementById('message-container');
+    const history = document.getElementById('chat-history');
+
+    // 在界面显示用户的选择
+    container.insertAdjacentHTML('beforeend', `
+        <div class="mb-10"><div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">叩问</div><div class="text-white/80 font-thin text-base tracking-[0.1em] mobile-text">我想求问关于“${choice}”的启示。</div></div>
     `);
-    document.getElementById('user-input').placeholder = "输入你的困惑或求问的方向...";
+
+    // 打包数据发给 AI
+    const finalPrompt = `【星辰采样数据】：${userChoices.join('；')}\n【旅人心中所求】：关于“${choice}”的启示。\n请结合以上采样数据，为我进行深度的解签。`;
+    
+    // 清空数据防止重复
+    userChoices = [];
+    
+    // 滚动并发送
+    history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
+    await sendToAI(finalPrompt);
 }
 
         window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
