@@ -183,17 +183,17 @@ let isRitualActive = false; // 标记是否正在进行仪式
 
         let chatContext = []; 
 
-        let idleTimer = null; 
+        // let idleTimer = null; 
 
-        let autoMessageCount = 0;
+        // let autoMessageCount = 0;
 
         let hasName = false;
 
         let userName = "";
 
-        const MAX_AUTO_MESSAGES = 10;
+        // const MAX_AUTO_MESSAGES = 10;
 
-        const IDLE_TIME = 60000;
+        // const IDLE_TIME = 60000;
 
         function toggleMusic() {
 
@@ -379,7 +379,7 @@ let isRitualActive = false; // 标记是否正在进行仪式
 
                 if (chatContext.length > 20) chatContext = chatContext.slice(-20);
 
-                resetIdleTimer();
+                // resetIdleTimer();
 
             } catch (e) { aiDisplay.innerText = "信号在光年外迷失了..."; }
 
@@ -390,7 +390,7 @@ let isRitualActive = false; // 标记是否正在进行仪式
     const message = input.value.trim();
     if (!message) return;
 
-    if (idleTimer) clearTimeout(idleTimer);
+    // if (idleTimer) clearTimeout(idleTimer);
 
     // --- 核心逻辑：判断是否携带采样数据 ---
     let finalPrompt = message;
@@ -442,7 +442,7 @@ let isRitualActive = false; // 标记是否正在进行仪式
 
                 await handleStream(res, txt);
 
-                resetIdleTimer();
+                // resetIdleTimer();
 
             } catch (e) { txt.innerText = "星尘漫过，请稍后再试。"; }
 
@@ -450,7 +450,7 @@ let isRitualActive = false; // 标记是否正在进行仪式
 
         function closeFortune() { document.getElementById('fortune-modal').classList.add('hidden'); resetIdleTimer(); }
 
-        document.getElementById('user-input').addEventListener('input', () => { if (idleTimer) clearTimeout(idleTimer); });
+        // document.getElementById('user-input').addEventListener('input', () => { if (idleTimer) clearTimeout(idleTimer); });
 
         document.getElementById('send-btn').onclick = handleSend;
 
