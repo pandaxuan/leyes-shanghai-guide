@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI K线交易训练模拟器</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Trading Gym · Historical Replay</p>
+          <h1>AI K线交易训练模拟器</h1>
+        </div>
+        <div class="top-actions">
+          <nav class="app-tabs" aria-label="主导航">
+            <button class="tab-button active" data-view="training">训练台</button>
+            <button class="tab-button" data-view="learning">学习中心</button>
+          </nav>
+          <button id="newQuestionTop" class="ghost-button">随机新题</button>
+          <button id="resetStats" class="danger-button">重置统计</button>
+        </div>
+      </header>
+
+      <section id="trainingView" class="app-view active">
+        <section class="market-panel">
+          <div class="control-group">
+            <label for="assetSelect">交易标的</label>
+            <select id="assetSelect"></select>
+          </div>
+          <div class="control-group">
+            <label for="periodSelect">K线周期</label>
+            <select id="periodSelect"></select>
+          </div>
+          <div class="market-readout">
+            <span>当前价格</span>
+            <strong id="currentPrice">--</strong>
+          </div>
+          <div class="market-readout">
+            <span>训练时间点</span>
+            <strong id="trainingTime">--</strong>
+          </div>
+          <div class="market-readout">
+            <span>训练模式</span>
+            <strong id="periodStyle">--</strong>
+          </div>
+        </section>
+
+        <section class="main-grid">
+          <div class="chart-section">
+            <div class="chart-header">
+              <div>
+                <h2 id="chartTitle">BTC/USDT · 1小时</h2>
+                <p id="chartSubtitle">展示过去 100 根K线，未来 30 根K线已隐藏</p>
+              </div>
+              <div class="chart-tools">
+                <button id="zoomOut" title="缩小">−</button>
+                <button id="zoomIn" title="放大">+</button>
+                <button id="resetView" title="重置视图">重置</button>
+              </div>
+            </div>
+            <canvas id="klineCanvas" width="1200" height="680" aria-label="K线蜡烛图"></canvas>
+            <div class="chart-hint">滚轮缩放 · 拖动查看历史 · 提交后显示未来真实走势</div>
+          </div>
+
+          <aside class="side-panel">
+            <section class="decision-box">
+              <p class="eyebrow">训练问题</p>
+              <h2>根据当前市场情况，你认为未来走势如何？</h2>
+              <div class="choices" id="choiceGroup">
+                <button class="choice active" data-choice="bullish">
+                  <span>📈 看涨</span>
+                  <small>认为未来价格上涨</small>
+                </button>
+                <button class="choice" data-choice="bearish">
+                  <span>📉 看跌</span>
+                  <small>认为未来价格下跌</small>
+                </button>
+                <button class="choice" data-choice="observe">
+                  <span>👀 保持观察</span>
+                  <small>当前信息不足，不做方向判断</small>
+                </button>
+              </div>
+              <button id="submitDecision" class="primary-button">提交判断</button>
+              <button id="openFramework" class="ghost-button full-width secondary-action">查看判断框架</button>
+            </section>
+
+            <section class="result-box" id="resultBox" hidden>
+              <p class="eyebrow">复盘结果</p>
+              <h2 id="resultTitle">--</h2>
+              <div class="result-metrics">
+                <div>
+                  <span>你的判断</span>
+                  <strong id="yourChoice">--</strong>
+                </div>
+                <div>
+                  <span>未来30根</span>
+                  <strong id="futureMove">--</strong>
+                </div>
+                <div>
+                  <span>结果</span>
+                  <strong id="correctness">--</strong>
+                </div>
+              </div>
+              <div class="analysis-block">
+                <h3>可能支持因素</h3>
+                <ul id="supportList"></ul>
+              </div>
+              <div class="analysis-block">
+                <h3>忽略风险</h3>
+                <ul id="riskList"></ul>
+              </div>
+              <button id="nextQuestion" class="ghost-button full-width">下一题</button>
+            </section>
+
+            <section class="stats-box">
+              <p class="eyebrow">训练统计</p>
+              <div class="stats-grid">
+                <div><span>训练次数</span><strong id="totalCount">0</strong></div>
+                <div><span>正确率</span><strong id="accuracy">0%</strong></div>
+                <div><span>看涨成功率</span><strong id="bullishRate">0%</strong></div>
+                <div><span>看跌成功率</span><strong id="bearishRate">0%</strong></div>
+                <div><span>保持观察次数</span><strong id="observeCount">0</strong></div>
+              </div>
+            </section>
+          </aside>
+        </section>
+      </section>
+
+      <section id="learningView" class="app-view learning-view" hidden>
+        <section class="learning-hero">
+          <div>
+            <p class="eyebrow">Learning Center</p>
+            <h2>交易学习中心</h2>
+            <p>每一页讲一个概念，并配一张 K线图示例。这里不预测市场，只帮助你在训练前知道该看什么、怎么想、什么时候该观望。</p>
+          </div>
+          <button id="startTrainingFromLearning" class="primary-button compact-button">回到训练台</button>
+        </section>
+
+        <section class="lesson-player" id="frameworkSection">
+          <div class="lesson-toolbar">
+            <div>
+              <p class="eyebrow" id="lessonCategory">Kline Basics</p>
+              <h2 id="lessonTitle">K线基础</h2>
+            </div>
+            <div class="lesson-progress">
+              <span id="lessonCounter">1 / 1</span>
+              <div class="progress-track"><span id="lessonProgressBar"></span></div>
+            </div>
+          </div>
+
+          <div class="lesson-layout">
+            <div class="lesson-chart-panel">
+              <canvas id="lessonChart" width="900" height="520" aria-label="学习概念K线图"></canvas>
+              <div id="lessonChartCaption" class="chart-hint">示例图用于理解形态，不代表真实行情。</div>
+            </div>
+
+            <article class="lesson-content">
+              <div class="signal-card-head">
+                <h3 id="lessonCardTitle">--</h3>
+                <span id="lessonType">--</span>
+              </div>
+              <div class="signal-part">
+                <strong>解释</strong>
+                <p id="lessonExplanation">--</p>
+              </div>
+              <div class="signal-part" id="lessonReasonBlock">
+                <strong id="lessonReasonTitle">为什么重要</strong>
+                <ul id="lessonReasons"></ul>
+              </div>
+              <div class="risk-note">
+                <strong>风险提醒</strong>
+                <p id="lessonRisk">--</p>
+              </div>
+            </article>
+          </div>
+
+          <div class="lesson-footer">
+            <button id="prevLesson" class="ghost-button">上一页</button>
+            <div id="lessonDots" class="lesson-dots" aria-label="学习进度"></div>
+            <button id="nextLesson" class="primary-button compact-button">下一页</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
