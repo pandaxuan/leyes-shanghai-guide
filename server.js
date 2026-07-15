@@ -3,6 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
 import { OpenAI } from 'openai'; 
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // ----------------------------------------------------
 // 1. 配置和初始化
@@ -26,9 +28,12 @@ const ai = new OpenAI({
 // ----------------------------------------------------
 const app = express();
 const port = process.env.PORT || 3000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(cors());
 app.use(express.json());
+app.use('/trading-gym', express.static(path.join(__dirname, 'trading-gym')));
 
 // ----------------------------------------------------
 // 3. API 路由 (解签专用流式传输)
