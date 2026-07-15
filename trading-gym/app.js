@@ -457,12 +457,13 @@ function renderAll() {
 function renderChart() {
   const dpr = window.devicePixelRatio || 1;
   const rect = els.canvas.getBoundingClientRect();
-  els.canvas.width = Math.floor(rect.width * dpr);
-  els.canvas.height = Math.floor(rect.height * dpr);
+  const fallbackWidth = els.canvas.parentElement?.clientWidth || window.innerWidth - 24;
+  const width = Math.max(rect.width, fallbackWidth, 320);
+  const height = Math.max(rect.height, window.innerWidth <= 720 ? 380 : 520);
+  els.canvas.width = Math.floor(width * dpr);
+  els.canvas.height = Math.floor(height * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  const width = rect.width;
-  const height = rect.height;
   const pad = { left: 58, right: 64, top: 20, bottom: 34 };
   const volumeHeight = Math.max(82, height * 0.2);
   const chartBottom = height - pad.bottom - volumeHeight - 18;
@@ -1064,11 +1065,17 @@ function bindEvents() {
     state.dragging = false;
   });
   window.addEventListener("resize", () => {
-    renderChart();
-    renderLessonChart();
+    requestAnimationFrame(() => {
+      renderChart();
+      renderLessonChart();
+    });
   });
 }
 
 renderLearningCenter();
 bindEvents();
 generateQuestion();
+requestAnimationFrame(() => {
+  renderChart();
+  renderLessonChart();
+});

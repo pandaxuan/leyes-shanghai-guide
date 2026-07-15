@@ -196,6 +196,7 @@ canvas {
   background: #080b10;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
+  touch-action: none;
 }
 
 .chart-hint {
@@ -822,7 +823,8 @@ button:disabled {
   }
 
   canvas {
-    min-height: 360px;
+    height: 380px;
+    min-height: 380px;
   }
 
   .learning-hero {
