@@ -69,6 +69,41 @@
     to { filter: blur(0) brightness(1); transform: scale(1); }
 }
 
+        .music-entry { position: relative; pointer-events: auto; }
+        .music-popover { position: absolute; top: calc(100% + 14px); right: 0; width: 238px; padding: 18px; border: 1px solid rgba(186,230,253,.22); border-radius: 18px; background: rgba(4,8,18,.78); box-shadow: 0 20px 70px rgba(0,0,0,.65); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); animation: music-rise .5s ease-out forwards; }
+        .music-popover[hidden], .music-modal[hidden] { display: none; }
+        .music-kicker, .music-now-label, .music-room-kicker { display: block; color: rgba(186,230,253,.5); font-size: 9px; letter-spacing: .38em; }
+        .music-popover strong { display: block; margin: 8px 0 4px; color: rgba(255,255,255,.9); font-size: 15px; font-weight: 300; letter-spacing: .08em; }
+        .music-popover > span:nth-of-type(2) { display: block; color: rgba(255,255,255,.42); font-size: 10px; letter-spacing: .12em; }
+        .music-enter { display: flex; justify-content: space-between; width: 100%; margin-top: 16px; padding: 11px 0 2px; border: 0; border-top: 1px solid rgba(255,255,255,.1); background: transparent; color: rgba(186,230,253,.85); font-size: 11px; letter-spacing: .14em; cursor: pointer; }
+        .music-modal { position: fixed; inset: 0; z-index: 120; display: flex; align-items: center; justify-content: center; padding: 28px; background: rgba(0,2,5,.82); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); }
+        .music-room { position: relative; width: min(100%, 620px); max-height: calc(100vh - 56px); overflow-y: auto; padding: 42px 42px 34px; border: 1px solid rgba(255,255,255,.13); border-radius: 28px; background: rgba(5,10,22,.76); box-shadow: 0 30px 100px rgba(0,0,0,.7); text-align: center; }
+        .music-close { position: absolute; top: 18px; right: 22px; border: 0; background: transparent; color: rgba(255,255,255,.5); font-size: 28px; font-weight: 200; cursor: pointer; }
+        .music-visual { position: relative; display: grid; place-items: center; width: 154px; height: 154px; margin: 34px auto 28px; border: 1px solid rgba(186,230,253,.42); border-radius: 50%; color: rgba(186,230,253,.86); box-shadow: 0 0 0 14px rgba(186,230,253,.035), 0 0 70px rgba(99,102,241,.18); }
+        .music-visual::before, .music-visual::after { position: absolute; inset: 17px; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; content: ''; animation: music-orbit 5s linear infinite; }
+        .music-visual::after { inset: -10px; border-color: rgba(186,230,253,.18); animation-direction: reverse; animation-duration: 8s; }
+        .music-visual i { width: 34px; height: 34px; stroke-width: 1; }
+        .music-room h2 { margin: 12px 0 8px; color: rgba(255,255,255,.9); font-size: 26px; font-weight: 300; letter-spacing: .12em; }
+        .music-artist { margin-bottom: 26px; color: rgba(255,255,255,.45); font-size: 11px; letter-spacing: .18em; }
+        .music-progress { height: 2px; overflow: hidden; background: rgba(255,255,255,.13); cursor: pointer; }
+        .music-progress span { display: block; width: 0; height: 100%; background: rgba(186,230,253,.85); transition: width .2s linear; }
+        .music-time, .music-playlist-head { display: flex; justify-content: space-between; color: rgba(255,255,255,.35); font-size: 10px; letter-spacing: .1em; }
+        .music-time { margin-top: 8px; }
+        .music-controls { display: flex; align-items: center; justify-content: center; gap: 28px; margin: 24px 0 30px; }
+        .music-controls button { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.15); border-radius: 50%; background: rgba(255,255,255,.035); color: rgba(255,255,255,.72); font-size: 16px; cursor: pointer; }
+        .music-controls .play-control { width: 58px; height: 58px; border-color: rgba(186,230,253,.55); background: rgba(186,230,253,.82); color: #041018; font-size: 18px; }
+        .music-playlist-head { padding: 14px 0 10px; border-top: 1px solid rgba(255,255,255,.1); color: rgba(255,255,255,.5); }
+        .music-list { display: grid; gap: 5px; text-align: left; }
+        .music-list-item { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center; padding: 11px 8px; border: 1px solid transparent; border-radius: 12px; background: transparent; color: rgba(255,255,255,.65); text-align: left; cursor: pointer; }
+        .music-list-item:hover, .music-list-item.active { border-color: rgba(186,230,253,.18); background: rgba(186,230,253,.06); }
+        .music-list-number, .music-list-state { color: rgba(186,230,253,.55); font-size: 10px; letter-spacing: .08em; }
+        .music-list-item strong, .music-list-item small { display: block; }
+        .music-list-item strong { font-size: 12px; font-weight: 300; letter-spacing: .08em; }
+        .music-list-item small { margin-top: 4px; color: rgba(255,255,255,.35); font-size: 10px; }
+        @keyframes music-rise { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes music-orbit { to { transform: rotate(360deg); } }
+        @media (max-width: 640px) { .music-popover { position: fixed; top: 78px; right: 16px; left: 16px; width: auto; } .music-modal { align-items: flex-end; padding: 0; } .music-room { width: 100%; max-height: 92vh; padding: 34px 24px 26px; border-radius: 26px 26px 0 0; } .music-visual { width: 130px; height: 130px; margin-top: 28px; } }
+
     </style>
 
 </head>
@@ -77,7 +112,7 @@
 
     <div id="canvas-container"></div>
 
-    <audio id="bgm" loop src="bgm.mp3"></audio>
+    <audio id="bgm" src="bgm.mp3"></audio>
 
     <div id="fixed-nav">
 
@@ -87,13 +122,22 @@
 
             <div class="flex items-center gap-3 sm:gap-6">
 
-                <button id="music-btn" onclick="toggleMusic()" class="glass-card flex items-center gap-2 text-white/60 px-4 py-2.5 rounded-full border border-white/5 transition-all">
+                <div id="music-entry" class="music-entry">
+                <button id="music-btn" aria-expanded="false" class="glass-card flex items-center gap-2 text-white/60 px-4 py-2.5 rounded-full border border-white/5 transition-all">
 
                     <div id="music-icon-container"><i data-lucide="music" class="w-3 h-3 sm:w-4 sm:h-4"></i></div>
 
                     <span class="text-[9px] sm:text-[10px] tracking-[0.3em] uppercase">星河音乐</span>
 
                 </button>
+
+                <div id="music-popover" class="music-popover" hidden>
+                    <span class="music-kicker">正在播放</span>
+                    <strong id="popoverTrackTitle">星河的回声</strong>
+                    <span id="popoverTrackMood">深夜 · 漂浮</span>
+                    <button id="openMusicRoom" class="music-enter">进入音河 <span>↗</span></button>
+                </div>
+                </div>
 
                 <a href="/trading-gym/" class="glass-card text-white/80 px-5 sm:px-8 py-2.5 sm:py-3 rounded-full text-[10px] tracking-[0.35em] border border-white/10 hover:bg-white/10 transition-all duration-1000">交易训练</a>
 
@@ -161,6 +205,26 @@
 
     </div>
 
+    <div id="music-modal" class="music-modal" hidden aria-label="音河播放器">
+        <div class="music-room">
+            <button id="closeMusicRoom" class="music-close" aria-label="关闭音河">×</button>
+            <div class="music-room-kicker">LEYES · 音河</div>
+            <div class="music-visual" aria-hidden="true"><span></span><i data-lucide="music-2"></i></div>
+            <p class="music-now-label">NOW PLAYING</p>
+            <h2 id="musicRoomTitle">星河的回声</h2>
+            <p id="musicRoomArtist" class="music-artist">Leyes · 深夜 · 漂浮</p>
+            <div class="music-progress"><span id="musicProgressBar"></span></div>
+            <div class="music-time"><span id="musicCurrentTime">0:00</span><span id="musicDuration">0:00</span></div>
+            <div class="music-controls">
+                <button id="previousTrack" aria-label="上一首">⟲</button>
+                <button id="playMusic" class="play-control" aria-label="播放">▶</button>
+                <button id="nextTrack" aria-label="下一首">⟳</button>
+            </div>
+            <div class="music-playlist-head"><span>播放列表</span><span id="musicTrackCount">1 首</span></div>
+            <div id="musicList" class="music-list"></div>
+        </div>
+    </div>
+
     <script>
 
         const BACKEND_URL = 'https://leyes-shanghai-guide.onrender.com';
@@ -170,6 +234,17 @@
         const musicBtn = document.getElementById('music-btn');
 
         const musicIconContainer = document.getElementById('music-icon-container');
+        const musicEntry = document.getElementById('music-entry');
+        const musicPopover = document.getElementById('music-popover');
+        const musicModal = document.getElementById('music-modal');
+        const musicList = document.getElementById('musicList');
+        const musicProgressBar = document.getElementById('musicProgressBar');
+        const playMusicButton = document.getElementById('playMusic');
+        const musicLibrary = [
+            { title: '星河的回声', artist: 'Leyes', mood: '深夜 · 漂浮', src: 'bgm.mp3' },
+        ];
+        let currentTrackIndex = 0;
+        let popoverTimer;
         const ritualQuestions = [
     { q: "深渊中有一束光，你认为那是：", a: ["过往的倒影", "神祇的垂怜", "出口的暗示", "自我的燃烧"] },
     { q: "若能带走一种声音，你会选择：", a: ["落雨敲击青石", "爱人的呢喃", "宇宙的寂静", "远行的风声"] },
@@ -197,15 +272,110 @@ let isRitualActive = false; // 标记是否正在进行仪式
 
         // const IDLE_TIME = 60000;
 
-        function toggleMusic() {
-
-            if (isPlaying) { bgm.pause(); musicIconContainer.classList.remove('music-spinning'); musicBtn.style.opacity = "0.4"; }
-
-            else { bgm.play().catch(e => {}); musicIconContainer.classList.add('music-spinning'); musicBtn.style.opacity = "1"; }
-
-            isPlaying = !isPlaying;
-
+        function formatMusicTime(seconds) {
+            if (!Number.isFinite(seconds)) return '0:00';
+            return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
         }
+
+        function renderMusicList() {
+            musicList.innerHTML = musicLibrary.map((track, index) => `
+                <button class="music-list-item ${index === currentTrackIndex ? 'active' : ''}" data-track-index="${index}">
+                    <span class="music-list-number">${String(index + 1).padStart(2, '0')}</span>
+                    <span><strong>${track.title}</strong><small>${track.artist} · ${track.mood}</small></span>
+                    <span class="music-list-state">${index === currentTrackIndex ? '正在播放' : '播放'}</span>
+                </button>
+            `).join('');
+            document.getElementById('musicTrackCount').textContent = `${musicLibrary.length} 首`;
+        }
+
+        function loadTrack(index, autoplay = false) {
+            currentTrackIndex = (index + musicLibrary.length) % musicLibrary.length;
+            const track = musicLibrary[currentTrackIndex];
+            bgm.src = track.src;
+            bgm.load();
+            document.getElementById('popoverTrackTitle').textContent = track.title;
+            document.getElementById('popoverTrackMood').textContent = track.mood;
+            document.getElementById('musicRoomTitle').textContent = track.title;
+            document.getElementById('musicRoomArtist').textContent = `${track.artist} · ${track.mood}`;
+            renderMusicList();
+            if (autoplay) playCurrentTrack();
+        }
+
+        function playCurrentTrack() {
+            bgm.play().then(() => {
+                isPlaying = true;
+                musicIconContainer.classList.add('music-spinning');
+                musicBtn.style.opacity = "1";
+                playMusicButton.textContent = 'Ⅱ';
+            }).catch(() => {});
+        }
+
+        function toggleMusic() {
+            if (bgm.paused) playCurrentTrack();
+            else {
+                bgm.pause();
+                isPlaying = false;
+                musicIconContainer.classList.remove('music-spinning');
+                playMusicButton.textContent = '▶';
+            }
+        }
+
+        function toggleMusicPopover() {
+            clearTimeout(popoverTimer);
+            const isOpen = !musicPopover.hidden;
+            musicPopover.hidden = isOpen;
+            musicBtn.setAttribute('aria-expanded', String(!isOpen));
+        }
+
+        function openMusicRoom() {
+            musicModal.hidden = false;
+            musicPopover.hidden = true;
+            musicBtn.setAttribute('aria-expanded', 'false');
+            renderMusicList();
+        }
+
+        function closeMusicRoom() { musicModal.hidden = true; }
+
+        musicEntry.addEventListener('mouseenter', () => {
+            clearTimeout(popoverTimer);
+            musicPopover.hidden = false;
+            musicBtn.setAttribute('aria-expanded', 'true');
+        });
+        musicEntry.addEventListener('mouseleave', () => {
+            popoverTimer = setTimeout(() => {
+                musicPopover.hidden = true;
+                musicBtn.setAttribute('aria-expanded', 'false');
+            }, 220);
+        });
+        musicBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleMusicPopover();
+        });
+        document.getElementById('openMusicRoom').addEventListener('click', openMusicRoom);
+        document.getElementById('closeMusicRoom').addEventListener('click', closeMusicRoom);
+        playMusicButton.addEventListener('click', toggleMusic);
+        document.getElementById('previousTrack').addEventListener('click', () => loadTrack(currentTrackIndex - 1, true));
+        document.getElementById('nextTrack').addEventListener('click', () => loadTrack(currentTrackIndex + 1, true));
+        musicList.addEventListener('click', (event) => {
+            const item = event.target.closest('[data-track-index]');
+            if (item) loadTrack(Number(item.dataset.trackIndex), true);
+        });
+        bgm.addEventListener('timeupdate', () => {
+            const progress = bgm.duration ? (bgm.currentTime / bgm.duration) * 100 : 0;
+            musicProgressBar.style.width = `${progress}%`;
+            document.getElementById('musicCurrentTime').textContent = formatMusicTime(bgm.currentTime);
+            document.getElementById('musicDuration').textContent = formatMusicTime(bgm.duration);
+        });
+        bgm.addEventListener('ended', () => loadTrack(currentTrackIndex + 1, true));
+        document.querySelector('.music-progress').addEventListener('click', (event) => {
+            if (!bgm.duration) return;
+            const rect = event.currentTarget.getBoundingClientRect();
+            bgm.currentTime = ((event.clientX - rect.left) / rect.width) * bgm.duration;
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeMusicRoom();
+        });
+        loadTrack(0);
 
         function resetIdleTimer() {
 
