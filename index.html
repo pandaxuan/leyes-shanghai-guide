@@ -8,7 +8,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>记得 - Personal Lab</title>
+    <title>记得 - Pinko Lab</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -128,7 +128,7 @@
 
         <nav class="p-6 sm:p-10 flex justify-between items-center pointer-events-auto">
 
-            <h1 class="text-lg sm:text-xl font-thin tracking-[0.4em] text-white/70 uppercase italic">Personal Lab</h1>
+            <h1 class="text-lg sm:text-xl font-thin tracking-[0.4em] text-white/70 uppercase italic">Pinko Lab</h1>
 
             <div class="flex items-center gap-3 sm:gap-6">
 
@@ -173,7 +173,7 @@
 
                     <div class="h-[1px] flex-grow max-w-[40px] bg-white/10"></div>
 
-                    <p class="text-white/40 tracking-[0.4em] text-[10px] sm:text-xs uppercase mobile-subtitle">时光揉碎在璀璨星河，而我一直记得你。</p>
+                    <p class="text-white/40 tracking-[0.4em] text-[10px] sm:text-xs uppercase mobile-subtitle">时光揉碎在璀璨星河，而记忆永远仅属于你。</p>
 
                     <div class="h-[1px] flex-grow max-w-[40px] bg-white/10"></div>
 
@@ -980,7 +980,7 @@ async function handleFinalQuest(choice) {
         function showMemoryWelcome() {
             const container = document.getElementById('message-container');
             const history = document.getElementById('chat-history');
-            ["请在左上角上传你的聊天数据", "来开启星河记忆"].forEach((message, index) => {
+            ["请在左上角上传你的数据", "来开启星河记忆"].forEach((message, index) => {
                 setTimeout(() => {
                     container.insertAdjacentHTML('beforeend', `<div class="mb-10 ethereal-text"><div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">星响</div><div class="text-white/60 font-thin text-base tracking-[0.1em] italic mobile-text">${message}</div></div>`);
                     history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
