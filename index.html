@@ -317,6 +317,7 @@ let isRitualActive = false; // 标记是否正在进行仪式
                 isPlaying = true;
                 musicIconContainer.classList.add('music-spinning');
                 musicBtn.style.opacity = "1";
+                musicBtn.setAttribute('aria-pressed', 'true');
                 playMusicButton.textContent = 'Ⅱ';
             }).catch(() => {});
         }
@@ -327,6 +328,8 @@ let isRitualActive = false; // 标记是否正在进行仪式
                 bgm.pause();
                 isPlaying = false;
                 musicIconContainer.classList.remove('music-spinning');
+                musicBtn.style.opacity = "0.4";
+                musicBtn.setAttribute('aria-pressed', 'false');
                 playMusicButton.textContent = '▶';
             }
         }
@@ -446,7 +449,10 @@ let isRitualActive = false; // 标记是否正在进行仪式
         });
         musicBtn.addEventListener('click', (event) => {
             event.stopPropagation();
-            toggleMusicPopover();
+            toggleMusic();
+            clearTimeout(popoverTimer);
+            musicPopover.hidden = false;
+            musicBtn.setAttribute('aria-expanded', 'true');
         });
         document.getElementById('openMusicRoom').addEventListener('click', openMusicRoom);
         document.getElementById('closeMusicRoom').addEventListener('click', closeMusicRoom);
