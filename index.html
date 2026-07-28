@@ -113,6 +113,17 @@
         .imported-record-card > small { color: rgba(255,255,255,.3); font-size: 10px; }
         .imported-record-card p { margin: 10px 0 0; color: rgba(255,255,255,.52); font-size: 13px; line-height: 1.8; letter-spacing: .04em; white-space: pre-wrap; }
         .imported-record-card .imported-user { color: rgba(186,230,253,.72); }
+        .identity-color-card { position: relative; display: grid; gap: 18px; margin-bottom: 18px; padding: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,.14); border-radius: 24px; background: rgba(255,255,255,.028); text-align: left; }
+        .identity-color-card::before { content: ""; position: absolute; inset: -45% -20% auto auto; width: 260px; height: 260px; border-radius: 50%; background: var(--identity-color); opacity: .22; filter: blur(18px); }
+        .identity-color-top { position: relative; display: grid; grid-template-columns: 74px 1fr; gap: 18px; align-items: center; }
+        .identity-swatch { width: 74px; aspect-ratio: 1; border-radius: 50%; background: var(--identity-color); box-shadow: 0 0 36px color-mix(in srgb, var(--identity-color) 58%, transparent), inset 0 0 0 1px rgba(255,255,255,.45); }
+        .identity-color-card small { color: rgba(255,255,255,.32); font-size: 10px; letter-spacing: .32em; text-transform: uppercase; }
+        .identity-color-card h3 { margin: 5px 0 4px; color: rgba(255,255,255,.9); font-size: 24px; font-weight: 200; letter-spacing: .14em; }
+        .identity-color-card strong { display: block; color: rgba(255,255,255,.72); font-size: 14px; font-weight: 300; letter-spacing: .12em; }
+        .identity-color-card p { position: relative; margin: 0; color: rgba(255,255,255,.58); font-size: 13px; line-height: 1.9; letter-spacing: .06em; }
+        .identity-traits { position: relative; display: flex; flex-wrap: wrap; gap: 8px; }
+        .identity-traits span { padding: 7px 11px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; background: rgba(255,255,255,.04); color: rgba(255,255,255,.5); font-size: 10px; letter-spacing: .12em; }
+        @media (max-width: 640px) { .identity-color-top { grid-template-columns: 58px 1fr; } .identity-swatch { width: 58px; } .identity-color-card h3 { font-size: 20px; } }
 
     </style>
 
@@ -253,7 +264,14 @@
         const playMusicButton = document.getElementById('playMusic');
         const musicLibrary = [
             { title: '星河的回声', artist: '记得', mood: '深夜 · 漂浮', src: 'bgm.mp3' },
+
+            // 上传到 GitHub 时，把更多音频文件放进 music/ 文件夹，
+            // 然后复制下面这一行，改 title / artist / mood / src 即可。
+            // 支持 mp3、m4a、aac、wav；最推荐 mp3，兼容性最好、文件也更适合网页。
+            // { title: '夜航', artist: 'Pinko Lab', mood: '安静 · 漫游', src: 'music/night.mp3' },
+            // { title: '记忆潮汐', artist: 'Pinko Lab', mood: '柔软 · 回声', src: 'music/tide.mp3' },
         ];
+        let identityColorsPromise;
         let currentTrackIndex = 0;
         let popoverTimer;
         const ritualQuestions = [
@@ -381,10 +399,127 @@ let isRitualActive = false; // 标记是否正在进行仪式
             };
         }
 
-        function renderImportedConversations(records, fileName) {
+        function loadIdentityColors() {
+            if (!identityColorsPromise) {
+                identityColorsPromise = fetch('identity-colors.json')
+                    .then((response) => {
+                        if (!response.ok) throw new Error('性格底色数据未加载');
+                        return response.json();
+                    });
+            }
+            return identityColorsPromise;
+        }
+
+        const identityFeatureMap = {
+            温柔: ['温柔', '柔软', '陪伴', '关心', '喜欢', '谢谢', '抱抱', '安慰', '关系', '情绪', '感受', '想念', '亲密', '靠近', '理解'],
+            明亮: ['开心', '快乐', '期待', '好奇', '创造', '灵感', '漂亮', '美', '浪漫', '热爱', '闪光', '惊喜', '自由'],
+            行动: ['目标', '计划', '开始', '完成', '推动', '执行', '解决', '项目', '上线', '发布', '工作', '效率', '决定', '训练'],
+            思辨: ['为什么', '逻辑', '分析', '理解', '系统', '问题', '原因', '判断', '结构', '思考', '假设', '选择', '认知'],
+            秩序: ['稳定', '清晰', '规则', '整理', '记录', '管理', '复盘', '边界', '节奏', '安全', '确定', '习惯', '细节'],
+            深邃: ['孤独', '夜晚', '记忆', '梦', '时间', '星河', '宇宙', '命运', '灵魂', '沉默', '深处', '秘密', '永远'],
+            坚韧: ['坚持', '压力', '困难', '痛苦', '成长', '修复', '克制', '勇敢', '承担', '重建', '忍耐', '真实', '自我'],
+            探索: ['旅行', '探索', '未来', '未知', '可能', '尝试', '世界', '开放', '方向', '冒险', '寻找', '学习', '新']
+        };
+
+        function scoreFeatureText(text) {
+            const scores = Object.fromEntries(Object.keys(identityFeatureMap).map((key) => [key, 0]));
+            const normalized = text.replace(/\s+/g, '');
+            Object.entries(identityFeatureMap).forEach(([feature, words]) => {
+                words.forEach((word) => {
+                    const matches = normalized.match(new RegExp(word, 'g'));
+                    if (matches) scores[feature] += matches.length;
+                });
+            });
+            return scores;
+        }
+
+        function extractIdentityText(records) {
+            return records.map((record) => record.messages.map((message) => {
+                const weight = message.role === 'user' ? 2 : 1;
+                return Array(weight).fill(message.text).join(' ');
+            }).join(' ')).join(' ');
+        }
+
+        function topIdentityTraits(scores) {
+            return Object.entries(scores)
+                .sort((a, b) => b[1] - a[1])
+                .filter(([, score]) => score > 0)
+                .slice(0, 4)
+                .map(([feature]) => feature);
+        }
+
+        function analyzeIdentityColor(records, colors) {
+            const sourceText = extractIdentityText(records);
+            const userScores = scoreFeatureText(sourceText);
+            const traits = topIdentityTraits(userScores);
+            const fallbackIndex = Math.abs(Array.from(sourceText).reduce((sum, char) => sum + char.charCodeAt(0), 0)) % colors.length;
+
+            if (!traits.length) {
+                return {
+                    color: colors[fallbackIndex],
+                    traits: ['记忆', '沉静', '未命名'],
+                    reason: '这份数据里可被辨认的情绪线索还很轻，星河先为你保留一枚安静的底色；当更多个人数据被导入，它会变得更准确。'
+                };
+            }
+
+            const ranked = colors.map((color, index) => {
+                const profile = `${color.name_cn}${color.personality_base}${color.personality_description}${color.origin_note}`;
+                const colorScores = scoreFeatureText(profile);
+                const matched = traits.reduce((total, trait) => total + (userScores[trait] || 0) * (colorScores[trait] + 0.5), 0);
+                const textAffinity = traits.filter((trait) => profile.includes(trait)).length;
+                return { color, score: matched + textAffinity + ((colors.length - index) * 0.0001) };
+            }).sort((a, b) => b.score - a.score);
+
+            const best = ranked[0].color;
+            return {
+                color: best,
+                traits,
+                reason: `你的数据里更常显现出“${traits.join('、')}”的气息。它和「${best.name_cn}」所代表的“${best.personality_base}”最接近：${best.personality_description}`
+            };
+        }
+
+        function renderIdentityColorAnalysis(block, analysis) {
+            const { color, traits, reason } = analysis;
+            const card = document.createElement('article');
+            card.className = 'identity-color-card';
+            card.style.setProperty('--identity-color', color.hex);
+
+            const top = document.createElement('div');
+            top.className = 'identity-color-top';
+            const swatch = document.createElement('div');
+            swatch.className = 'identity-swatch';
+            const titleWrap = document.createElement('div');
+            const kicker = document.createElement('small');
+            kicker.textContent = '适合你的性格底色';
+            const name = document.createElement('h3');
+            name.textContent = color.name_cn;
+            const base = document.createElement('strong');
+            base.textContent = color.personality_base;
+            titleWrap.append(kicker, name, base);
+            top.append(swatch, titleWrap);
+
+            const description = document.createElement('p');
+            description.textContent = reason;
+            const origin = document.createElement('p');
+            origin.textContent = `色源注记：${color.origin_note}`;
+
+            const traitList = document.createElement('div');
+            traitList.className = 'identity-traits';
+            traits.forEach((trait) => {
+                const item = document.createElement('span');
+                item.textContent = trait;
+                traitList.appendChild(item);
+            });
+
+            card.append(top, description, origin, traitList);
+            block.appendChild(card);
+        }
+
+        function renderImportedConversations(records, fileName, identityAnalysis) {
             const container = document.getElementById('message-container');
             const block = document.createElement('section');
             block.className = 'imported-records ethereal-text';
+            if (identityAnalysis) renderIdentityColorAnalysis(block, identityAnalysis);
             const heading = document.createElement('div');
             heading.className = 'imported-records-heading';
             const kicker = document.createElement('span');
@@ -433,7 +568,9 @@ let isRitualActive = false; // 标记是否正在进行仪式
                 records = [{ title: file.name, created: '', messages: [{ role: 'assistant', text: text.trim() }] }];
             }
             if (!records.length) throw new Error('没有识别到可展示的对话内容');
-            renderImportedConversations(records, file.name);
+            const colors = await loadIdentityColors();
+            const identityAnalysis = analyzeIdentityColor(records, colors);
+            renderImportedConversations(records, file.name, identityAnalysis);
         }
 
         musicEntry.addEventListener('mouseenter', () => {
