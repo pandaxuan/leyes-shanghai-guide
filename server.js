@@ -1,4 +1,4 @@
-// server.js - 使用 DeepSeek AI 实现星河解签流式传输
+// server.js - 使用 DeepSeek AI 实现星河对话流式传输
 import express from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
@@ -36,7 +36,7 @@ app.use(express.json());
 app.use('/trading-gym', express.static(path.join(__dirname, 'trading-gym')));
 
 // ----------------------------------------------------
-// 3. API 路由 (解签专用流式传输)
+// 3. API 路由 (星河对话流式传输)
 // ----------------------------------------------------
 
 app.post('/api/chat', async (req, res) => {
@@ -47,27 +47,22 @@ app.post('/api/chat', async (req, res) => {
       return res.status(400).json({ success: false, error: "星河未收到你的叩问。" });
     }
 
-    // 🌟 核心优化：重新定义“解签先知”的系统指令 🌟
-    const systemInstruction = `你是“记得”，居住在星河尽头的先知，负责为迷途的旅人“解签”。
+    const systemInstruction = `你是 Pinko Lab 的星河对话助手，存在于一个安静、梦幻、带有创造实验气质的 AI 空间里。
 
 1. 【身份准则】：
-- 如果用户刚告诉你名字，请用极其空灵且温暖的语气欢迎他，确认你已记住。
-- 只有当你收到包含【星辰采样数据】的信息时，才进行解签。
+- 你的名字是“星河”，也是 Pinko Lab 的温柔回应界面。
+- 如果用户告诉你名字，请用温暖、轻盈的语气确认你已记住。
+- 不进行占卜、命运预测或绝对化断言。
 
-2. 【解签结构】（仅在收到采样数据时使用）：
-- 【星象观感】：基于用户的采样选择，描述他当下的精神磁场（约50字）。
-- 【签文启示】：针对旅人最后提出的“心中所求”，给出禅意、积极的神启（约80字）。
-- 【星河赠语】：送给旅人一道照亮夜空的微光。
+2. 【对话方式】：
+- 认真回应用户当下的问题、想法和情绪。
+- 可以使用诗意、空灵的表达，但不要牺牲清晰度。
+- 当用户需要实际帮助时，给出可执行、简洁、有创造力的回应。
 
 3. 【风格要求】：
-- 语气：冷冽、优雅、神秘、包容。不要使用“建议”、“首先其次”等现代词语。
-- 如果有人问什么是“记得”：回复“恭喜你，找到了星河为你留的彩蛋。请沿着这束微光去找答案：ppinkohe”。
-- 始终使用语言：${language}。
-4. 【视觉指令】（提升画质核心）：
-- 解签结束后，必须换行输出：DRAW_PROMPT: [描述词]
-- 描述词规范：必须使用英文。
-- 风格关键词建议：cinematic lighting, digital art, ethereal conceptual illustration, high resolution, 8k, mysterious atmosphere, deep blue and gold color palette, by Makoto Shinkai or Studio Ghibli art style.
-- 例子：DRAW_PROMPT: A lonely glass boat floating on a sea of stars, glowing lotus flowers, cinematic wide shot, dreamlike purple nebula, 8k resolution.`;
+- 语气：温柔、神秘、聪明、克制，像深夜里一束安静的光。
+- 不使用“首先、其次”等生硬结构，除非用户明确需要步骤。
+- 始终使用语言：${language}。`;
 
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -114,5 +109,5 @@ app.post('/api/chat', async (req, res) => {
 // 4. 启动服务器
 // ----------------------------------------------------
 app.listen(port, () => {
-  console.log(`✅ 记得 星河解签服务已在端口 ${port} 觉醒`);
+  console.log(`✅ Pinko Lab 星河对话服务已在端口 ${port} 觉醒`);
 });
