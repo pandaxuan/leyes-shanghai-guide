@@ -8,7 +8,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>记得 - Pinko Lab</title>
+    <title>Pinko Lab</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -24,9 +24,9 @@
 
         #fixed-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; pointer-events: none; }
 
-        #main-ui { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; pointer-events: none; }
+        #main-ui { position: relative; z-index: 10; height: 100vh; display: flex; align-items: center; justify-content: center; pointer-events: none; }
 
-        #chat-history { flex-grow: 1; margin-top: 80px; margin-bottom: 110px; overflow-y: auto; padding: 0 1.5rem; pointer-events: auto; mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent); scroll-behavior: smooth; }
+        #chat-history { flex: 1; min-height: 0; overflow-y: auto; padding: 22px 22px 12px; pointer-events: auto; mask-image: linear-gradient(to bottom, transparent, black 8%, black 94%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 8%, black 94%, transparent); scroll-behavior: smooth; }
 
         .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 0 50px rgba(0, 0, 0, 0.6); pointer-events: auto; }
 
@@ -43,8 +43,6 @@
         .center-tracking { padding-left: 0.8em; }
 
         @media (max-width: 640px) {
-
-            #chat-history { margin-top: 70px; margin-bottom: 90px; }
 
             .mobile-title { font-size: 2.2rem !important; letter-spacing: 0.6em !important; padding-left: 0.6em !important; }
 
@@ -103,27 +101,19 @@
         @keyframes music-rise { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes music-orbit { to { transform: rotate(360deg); } }
         @media (max-width: 640px) { .music-popover { position: fixed; top: 78px; right: 16px; left: 16px; width: auto; } .music-modal { align-items: flex-end; padding: 0; } .music-room { width: 100%; max-height: 92vh; padding: 34px 24px 26px; border-radius: 26px 26px 0 0; } .music-visual { width: 130px; height: 130px; margin-top: 28px; } }
-
-        .imported-records { margin: 20px auto 0; max-width: 640px; padding-bottom: 80px; }
-        .imported-records-heading { display: grid; gap: 8px; margin-bottom: 18px; padding: 18px 20px; border: 1px solid rgba(186,230,253,.16); border-radius: 18px; background: rgba(255,255,255,.025); text-align: left; }
-        .imported-records-heading strong { color: rgba(255,255,255,.82); font-size: 15px; font-weight: 300; letter-spacing: .1em; }
-        .imported-records-heading small { color: rgba(255,255,255,.36); font-size: 10px; letter-spacing: .08em; }
-        .imported-record-card { margin-top: 10px; padding: 18px 20px; border-left: 1px solid rgba(186,230,253,.3); background: rgba(255,255,255,.018); text-align: left; }
-        .imported-record-card h3 { display: inline-block; margin: 0 12px 12px 0; color: rgba(255,255,255,.78); font-size: 14px; font-weight: 300; letter-spacing: .08em; }
-        .imported-record-card > small { color: rgba(255,255,255,.3); font-size: 10px; }
-        .imported-record-card p { margin: 10px 0 0; color: rgba(255,255,255,.52); font-size: 13px; line-height: 1.8; letter-spacing: .04em; white-space: pre-wrap; }
-        .imported-record-card .imported-user { color: rgba(186,230,253,.72); }
-        .identity-color-card { position: relative; display: grid; gap: 18px; margin-bottom: 18px; padding: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,.14); border-radius: 24px; background: rgba(255,255,255,.028); text-align: left; }
-        .identity-color-card::before { content: ""; position: absolute; inset: -45% -20% auto auto; width: 260px; height: 260px; border-radius: 50%; background: var(--identity-color); opacity: .22; filter: blur(18px); }
-        .identity-color-top { position: relative; display: grid; grid-template-columns: 74px 1fr; gap: 18px; align-items: center; }
-        .identity-swatch { width: 74px; aspect-ratio: 1; border-radius: 50%; background: var(--identity-color); box-shadow: 0 0 36px color-mix(in srgb, var(--identity-color) 58%, transparent), inset 0 0 0 1px rgba(255,255,255,.45); }
-        .identity-color-card small { color: rgba(255,255,255,.32); font-size: 10px; letter-spacing: .32em; text-transform: uppercase; }
-        .identity-color-card h3 { margin: 5px 0 4px; color: rgba(255,255,255,.9); font-size: 24px; font-weight: 200; letter-spacing: .14em; }
-        .identity-color-card strong { display: block; color: rgba(255,255,255,.72); font-size: 14px; font-weight: 300; letter-spacing: .12em; }
-        .identity-color-card p { position: relative; margin: 0; color: rgba(255,255,255,.58); font-size: 13px; line-height: 1.9; letter-spacing: .06em; }
-        .identity-traits { position: relative; display: flex; flex-wrap: wrap; gap: 8px; }
-        .identity-traits span { padding: 7px 11px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; background: rgba(255,255,255,.04); color: rgba(255,255,255,.5); font-size: 10px; letter-spacing: .12em; }
-        @media (max-width: 640px) { .identity-color-top { grid-template-columns: 58px 1fr; } .identity-swatch { width: 58px; } .identity-color-card h3 { font-size: 20px; } }
+        .chat-widget { position: fixed; right: 28px; bottom: 28px; z-index: 80; pointer-events: auto; }
+        .chat-toggle { display: grid; place-items: center; width: 64px; height: 64px; border: 1px solid rgba(186,230,253,.28); border-radius: 50%; background: rgba(4,8,18,.64); color: rgba(255,255,255,.76); box-shadow: 0 18px 70px rgba(0,0,0,.72), 0 0 42px rgba(186,230,253,.08); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); cursor: pointer; transition: transform .5s ease, border-color .5s ease, background .5s ease; }
+        .chat-toggle:hover { transform: translateY(-2px); border-color: rgba(186,230,253,.52); background: rgba(8,16,32,.76); color: white; }
+        .chat-toggle i { width: 25px; height: 25px; stroke-width: 1.3; }
+        .chat-panel { position: absolute; right: 0; bottom: 82px; display: flex; flex-direction: column; width: min(420px, calc(100vw - 32px)); height: min(620px, calc(100vh - 132px)); overflow: hidden; border: 1px solid rgba(255,255,255,.12); border-radius: 24px; background: rgba(2,7,17,.72); box-shadow: 0 30px 110px rgba(0,0,0,.78); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px); transform-origin: bottom right; animation: chat-open .45s ease-out forwards; }
+        .chat-panel[hidden] { display: none; }
+        .chat-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 18px 14px 22px; border-bottom: 1px solid rgba(255,255,255,.08); }
+        .chat-panel-head span { color: rgba(186,230,253,.58); font-size: 10px; letter-spacing: .34em; text-transform: uppercase; }
+        .chat-close { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid rgba(255,255,255,.1); border-radius: 50%; background: rgba(255,255,255,.025); color: rgba(255,255,255,.56); cursor: pointer; }
+        .chat-input-shell { margin: 0 14px 14px; display: flex; gap: 8px; align-items: center; padding: 10px 10px 10px 16px; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(255,255,255,.035); }
+        .chat-input-shell input { min-width: 0; }
+        @keyframes chat-open { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @media (max-width: 640px) { .chat-widget { right: 16px; bottom: 16px; } .chat-panel { bottom: 76px; height: min(560px, calc(100vh - 108px)); border-radius: 22px; } .chat-toggle { width: 58px; height: 58px; } }
 
     </style>
 
@@ -160,31 +150,23 @@
                 </div>
                 </div>
 
-                <button id="importRecordsBtn" class="glass-card text-white/80 px-5 sm:px-8 py-2.5 sm:py-3 rounded-full text-[10px] tracking-[0.35em] border border-white/10 hover:bg-white/10 transition-all duration-1000">
-                    <i data-lucide="upload" class="inline-block mr-1 h-3 w-3"></i>导入记录
-                </button>
-
             </div>
 
         </nav>
 
     </div>
 
-    <input id="chatRecordsInput" type="file" accept=".json,.txt,.html,.htm" hidden>
-
     <div id="main-ui">
 
-        <div id="chat-history" class="no-scrollbar max-w-2xl mx-auto w-full">
+        <div id="header-section" class="text-center px-6 ethereal-text">
 
-            <div id="header-section" class="text-center pt-24 pb-20 sm:pt-32 sm:pb-32 ethereal-text">
-
-                <h2 class="text-3xl sm:text-5xl font-thin tracking-[0.8em] sm:tracking-[1.2em] mb-8 text-white/80 mobile-title center-tracking">记得</h2>
+                <h2 class="text-3xl sm:text-5xl font-thin tracking-[0.8em] sm:tracking-[1.2em] mb-8 text-white/80 mobile-title center-tracking">星河</h2>
 
                 <div class="flex justify-center items-center gap-3 px-4">
 
                     <div class="h-[1px] flex-grow max-w-[40px] bg-white/10"></div>
 
-                    <p class="text-white/40 tracking-[0.4em] text-[10px] sm:text-xs uppercase mobile-subtitle">时光揉碎在璀璨星河，而记忆永远仅属于你。</p>
+                    <p class="text-white/40 tracking-[0.4em] text-[10px] sm:text-xs uppercase mobile-subtitle">Pinko 的 AI 创造实验室</p>
 
                     <div class="h-[1px] flex-grow max-w-[40px] bg-white/10"></div>
 
@@ -192,26 +174,29 @@
 
             </div>
 
-            <div id="message-container" class="space-y-12 pb-20"></div>
-
         </div>
 
-    </div>
-
-    <div class="fixed bottom-0 left-0 right-0 p-8 sm:p-16 z-50">
-
-        <div class="max-w-xl mx-auto flex gap-4 items-center glass-card p-3 sm:p-3 rounded-full border-white/10">
-
-            <input type="text" id="user-input" class="flex-grow bg-transparent text-white px-5 sm:px-8 py-2 outline-none placeholder:text-white/20 text-sm tracking-[0.2em] font-light" placeholder="把未说完的话，写给星河...">
-
-            <button id="send-btn" class="text-white/40 hover:text-white transition-all duration-700 p-1">
-
-                <i data-lucide="arrow-up-circle" class="w-8 h-8 stroke-[1px]"></i>
-
-            </button>
-
-        </div>
-
+    <div id="chat-widget" class="chat-widget">
+        <section id="chat-panel" class="chat-panel" hidden aria-label="星河对话">
+            <div class="chat-panel-head">
+                <span>星河对话</span>
+                <button id="chat-close" class="chat-close" aria-label="收起对话">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div id="chat-history" class="no-scrollbar">
+                <div id="message-container" class="space-y-8 pb-8"></div>
+            </div>
+            <div class="chat-input-shell">
+                <input type="text" id="user-input" class="flex-grow bg-transparent text-white px-2 py-2 outline-none placeholder:text-white/20 text-sm tracking-[0.12em] font-light" placeholder="把未说完的话，写给星河...">
+                <button id="send-btn" class="text-white/45 hover:text-white transition-all duration-700 p-1" aria-label="发送">
+                    <i data-lucide="arrow-up-circle" class="w-8 h-8 stroke-[1px]"></i>
+                </button>
+            </div>
+        </section>
+        <button id="chat-toggle" class="chat-toggle" aria-label="展开对话" aria-expanded="false">
+            <i data-lucide="message-circle"></i>
+        </button>
     </div>
 
     <div id="fortune-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
@@ -231,11 +216,11 @@
     <div id="music-modal" class="music-modal" hidden aria-label="音河播放器">
         <div class="music-room">
             <button id="closeMusicRoom" class="music-close" aria-label="关闭音河">×</button>
-            <div class="music-room-kicker">记得 · 音河</div>
+            <div class="music-room-kicker">Pinko Lab · 音河</div>
             <div class="music-visual" aria-hidden="true"><span></span><i data-lucide="music-2"></i></div>
             <p class="music-now-label">NOW PLAYING</p>
             <h2 id="musicRoomTitle">星河的回声</h2>
-            <p id="musicRoomArtist" class="music-artist">记得 · 深夜 · 漂浮</p>
+            <p id="musicRoomArtist" class="music-artist">Pinko Lab · 深夜 · 漂浮</p>
             <div class="music-progress"><span id="musicProgressBar"></span></div>
             <div class="music-time"><span id="musicCurrentTime">0:00</span><span id="musicDuration">0:00</span></div>
             <div class="music-controls">
@@ -265,15 +250,14 @@
         const musicLibrary = [
             { title: 'Gentle', artist: 'Pinko He', mood: '温柔 · 漂浮', src: 'music/Gentle.mp3' },
             { title: 'Banana', artist: 'Pinko He', mood: '随性 · 地下', src: 'music/Banana.mp3' },
-            { title: 'Shibuya', artist: 'Pinko He', mood: '阴暗 · 潮湿', src: 'music/Shibuya.mp3' },
-            { title: 'Velvet Static', artist: 'Pinko He', mood: '丝绒 · 暗紫', src: 'music/VelvetStatic.mp3' },
+            { title: 'Shibuya', artist: 'Pinko He', mood: '阴暗 · 潮湿', src: 'music/Banana.mp3' },
+            { title: 'Velvet Static', artist: 'Pinko He', mood: '丝绒 · 暗紫', src: 'music/Banana.mp3' },
             // 上传到 GitHub 时，把更多音频文件放进 music/ 文件夹，
             // 然后复制下面这一行，改 title / artist / mood / src 即可。
             // 支持 mp3、m4a、aac、wav；最推荐 mp3，兼容性最好、文件也更适合网页。
             // { title: '夜航', artist: 'Pinko Lab', mood: '安静 · 漫游', src: 'music/night.mp3' },
             // { title: '记忆潮汐', artist: 'Pinko Lab', mood: '柔软 · 回声', src: 'music/tide.mp3' },
         ];
-        let identityColorsPromise;
         let currentTrackIndex = 0;
         let popoverTimer;
         const ritualQuestions = [
@@ -370,211 +354,6 @@ let isRitualActive = false; // 标记是否正在进行仪式
 
         function closeMusicRoom() { musicModal.hidden = true; }
 
-        function textFromContent(content) {
-            if (!content) return '';
-            const parts = Array.isArray(content.parts) ? content.parts : [content.text || content];
-            return parts.map((part) => typeof part === 'string' ? part : part?.text || '').join('\n').trim();
-        }
-
-        function normalizeConversation(conversation, fallbackTitle = '导入的对话') {
-            const messages = [];
-            if (conversation?.mapping) {
-                Object.values(conversation.mapping)
-                    .map((node) => node?.message)
-                    .filter(Boolean)
-                    .sort((a, b) => (a.create_time || 0) - (b.create_time || 0))
-                    .forEach((message) => {
-                        const text = textFromContent(message.content);
-                        const role = message.author?.role;
-                        if (text && (role === 'user' || role === 'assistant')) messages.push({ role, text });
-                    });
-            } else if (Array.isArray(conversation?.messages)) {
-                conversation.messages.forEach((message) => {
-                    const text = textFromContent(message.content || message.text);
-                    if (text) messages.push({ role: message.role || message.author?.role || 'assistant', text });
-                });
-            }
-            return {
-                title: conversation?.title || fallbackTitle,
-                created: conversation?.create_time ? new Date(conversation.create_time * 1000).toLocaleDateString('zh-CN') : '',
-                messages: messages.slice(0, 12),
-            };
-        }
-
-        function loadIdentityColors() {
-            if (!identityColorsPromise) {
-                identityColorsPromise = fetch('identity-colors.json')
-                    .then((response) => {
-                        if (!response.ok) throw new Error('性格底色数据未加载');
-                        return response.json();
-                    });
-            }
-            return identityColorsPromise;
-        }
-
-        const identityFeatureMap = {
-            温柔: ['温柔', '柔软', '陪伴', '关心', '喜欢', '谢谢', '抱抱', '安慰', '关系', '情绪', '感受', '想念', '亲密', '靠近', '理解'],
-            明亮: ['开心', '快乐', '期待', '好奇', '创造', '灵感', '漂亮', '美', '浪漫', '热爱', '闪光', '惊喜', '自由'],
-            行动: ['目标', '计划', '开始', '完成', '推动', '执行', '解决', '项目', '上线', '发布', '工作', '效率', '决定', '训练'],
-            思辨: ['为什么', '逻辑', '分析', '理解', '系统', '问题', '原因', '判断', '结构', '思考', '假设', '选择', '认知'],
-            秩序: ['稳定', '清晰', '规则', '整理', '记录', '管理', '复盘', '边界', '节奏', '安全', '确定', '习惯', '细节'],
-            深邃: ['孤独', '夜晚', '记忆', '梦', '时间', '星河', '宇宙', '命运', '灵魂', '沉默', '深处', '秘密', '永远'],
-            坚韧: ['坚持', '压力', '困难', '痛苦', '成长', '修复', '克制', '勇敢', '承担', '重建', '忍耐', '真实', '自我'],
-            探索: ['旅行', '探索', '未来', '未知', '可能', '尝试', '世界', '开放', '方向', '冒险', '寻找', '学习', '新']
-        };
-
-        function scoreFeatureText(text) {
-            const scores = Object.fromEntries(Object.keys(identityFeatureMap).map((key) => [key, 0]));
-            const normalized = text.replace(/\s+/g, '');
-            Object.entries(identityFeatureMap).forEach(([feature, words]) => {
-                words.forEach((word) => {
-                    const matches = normalized.match(new RegExp(word, 'g'));
-                    if (matches) scores[feature] += matches.length;
-                });
-            });
-            return scores;
-        }
-
-        function extractIdentityText(records) {
-            return records.map((record) => record.messages.map((message) => {
-                const weight = message.role === 'user' ? 2 : 1;
-                return Array(weight).fill(message.text).join(' ');
-            }).join(' ')).join(' ');
-        }
-
-        function topIdentityTraits(scores) {
-            return Object.entries(scores)
-                .sort((a, b) => b[1] - a[1])
-                .filter(([, score]) => score > 0)
-                .slice(0, 4)
-                .map(([feature]) => feature);
-        }
-
-        function analyzeIdentityColor(records, colors) {
-            const sourceText = extractIdentityText(records);
-            const userScores = scoreFeatureText(sourceText);
-            const traits = topIdentityTraits(userScores);
-            const fallbackIndex = Math.abs(Array.from(sourceText).reduce((sum, char) => sum + char.charCodeAt(0), 0)) % colors.length;
-
-            if (!traits.length) {
-                return {
-                    color: colors[fallbackIndex],
-                    traits: ['记忆', '沉静', '未命名'],
-                    reason: '这份数据里可被辨认的情绪线索还很轻，星河先为你保留一枚安静的底色；当更多个人数据被导入，它会变得更准确。'
-                };
-            }
-
-            const ranked = colors.map((color, index) => {
-                const profile = `${color.name_cn}${color.personality_base}${color.personality_description}${color.origin_note}`;
-                const colorScores = scoreFeatureText(profile);
-                const matched = traits.reduce((total, trait) => total + (userScores[trait] || 0) * (colorScores[trait] + 0.5), 0);
-                const textAffinity = traits.filter((trait) => profile.includes(trait)).length;
-                return { color, score: matched + textAffinity + ((colors.length - index) * 0.0001) };
-            }).sort((a, b) => b.score - a.score);
-
-            const best = ranked[0].color;
-            return {
-                color: best,
-                traits,
-                reason: `你的数据里更常显现出“${traits.join('、')}”的气息。它和「${best.name_cn}」所代表的“${best.personality_base}”最接近：${best.personality_description}`
-            };
-        }
-
-        function renderIdentityColorAnalysis(block, analysis) {
-            const { color, traits, reason } = analysis;
-            const card = document.createElement('article');
-            card.className = 'identity-color-card';
-            card.style.setProperty('--identity-color', color.hex);
-
-            const top = document.createElement('div');
-            top.className = 'identity-color-top';
-            const swatch = document.createElement('div');
-            swatch.className = 'identity-swatch';
-            const titleWrap = document.createElement('div');
-            const kicker = document.createElement('small');
-            kicker.textContent = '适合你的性格底色';
-            const name = document.createElement('h3');
-            name.textContent = color.name_cn;
-            const base = document.createElement('strong');
-            base.textContent = color.personality_base;
-            titleWrap.append(kicker, name, base);
-            top.append(swatch, titleWrap);
-
-            const description = document.createElement('p');
-            description.textContent = reason;
-            const origin = document.createElement('p');
-            origin.textContent = `色源注记：${color.origin_note}`;
-
-            const traitList = document.createElement('div');
-            traitList.className = 'identity-traits';
-            traits.forEach((trait) => {
-                const item = document.createElement('span');
-                item.textContent = trait;
-                traitList.appendChild(item);
-            });
-
-            card.append(top, description, origin, traitList);
-            block.appendChild(card);
-        }
-
-        function renderImportedConversations(records, fileName, identityAnalysis) {
-            const container = document.getElementById('message-container');
-            const block = document.createElement('section');
-            block.className = 'imported-records ethereal-text';
-            if (identityAnalysis) renderIdentityColorAnalysis(block, identityAnalysis);
-            const heading = document.createElement('div');
-            heading.className = 'imported-records-heading';
-            const kicker = document.createElement('span');
-            kicker.className = 'text-white/30 text-[10px] tracking-[0.4em] uppercase';
-            kicker.textContent = '记得 · 本地记录';
-            const count = document.createElement('strong');
-            count.textContent = `已导入 ${records.length} 段对话`;
-            const source = document.createElement('small');
-            source.textContent = `${fileName} · 内容仅保留在当前浏览器`;
-            heading.append(kicker, count, source);
-            block.appendChild(heading);
-            records.slice(0, 8).forEach((record) => {
-                const card = document.createElement('article');
-                card.className = 'imported-record-card';
-                const title = document.createElement('h3');
-                title.textContent = record.title;
-                card.appendChild(title);
-                if (record.created) {
-                    const date = document.createElement('small');
-                    date.textContent = record.created;
-                    card.appendChild(date);
-                }
-                record.messages.slice(0, 4).forEach((message) => {
-                    const line = document.createElement('p');
-                    line.className = message.role === 'user' ? 'imported-user' : 'imported-assistant';
-                    line.textContent = `${message.role === 'user' ? '我' : '记得'}：${message.text.slice(0, 360)}${message.text.length > 360 ? '…' : ''}`;
-                    card.appendChild(line);
-                });
-                block.appendChild(card);
-            });
-            container.appendChild(block);
-            document.getElementById('chat-history').scrollTo({ top: document.getElementById('chat-history').scrollHeight, behavior: 'smooth' });
-        }
-
-        async function importChatRecords(file) {
-            const raw = await file.text();
-            let records = [];
-            if (file.name.toLowerCase().endsWith('.json')) {
-                const data = JSON.parse(raw);
-                const conversations = Array.isArray(data) ? data : Array.isArray(data.conversations) ? data.conversations : [data];
-                records = conversations.map((conversation) => normalizeConversation(conversation, file.name)).filter((record) => record.messages.length);
-            } else {
-                const text = file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm')
-                    ? new DOMParser().parseFromString(raw, 'text/html').body.innerText
-                    : raw;
-                records = [{ title: file.name, created: '', messages: [{ role: 'assistant', text: text.trim() }] }];
-            }
-            if (!records.length) throw new Error('没有识别到可展示的对话内容');
-            const colors = await loadIdentityColors();
-            const identityAnalysis = analyzeIdentityColor(records, colors);
-            renderImportedConversations(records, file.name, identityAnalysis);
-        }
-
         musicEntry.addEventListener('mouseenter', () => {
             clearTimeout(popoverTimer);
             musicPopover.hidden = false;
@@ -618,19 +397,6 @@ let isRitualActive = false; // 标记是否正在进行仪式
             if (event.key === 'Escape') closeMusicRoom();
         });
         loadTrack(0);
-
-        document.getElementById('importRecordsBtn').addEventListener('click', () => document.getElementById('chatRecordsInput').click());
-        document.getElementById('chatRecordsInput').addEventListener('change', async (event) => {
-            const file = event.target.files?.[0];
-            if (!file) return;
-            try {
-                await importChatRecords(file);
-            } catch (error) {
-                window.alert(`导入失败：${error.message}`);
-            } finally {
-                event.target.value = '';
-            }
-        });
 
         function resetIdleTimer() {
 
@@ -778,7 +544,7 @@ let isRitualActive = false; // 标记是否正在进行仪式
 
                 let processedMessage = userMessage;
 
-                let systemPrompt = "你是一个空灵的星河守护者。记得是你的名字。";
+                let systemPrompt = "你是一个空灵的星河守护者。Pinko Lab 是你的名字。";
 
                 if (hasName) {
 
@@ -879,11 +645,43 @@ let isRitualActive = false; // 标记是否正在进行仪式
 
         function closeFortune() { document.getElementById('fortune-modal').classList.add('hidden'); resetIdleTimer(); }
 
+        const chatPanel = document.getElementById('chat-panel');
+        const chatToggle = document.getElementById('chat-toggle');
+        const chatClose = document.getElementById('chat-close');
+
+        function openChatPanel() {
+            chatPanel.hidden = false;
+            chatToggle.setAttribute('aria-expanded', 'true');
+            chatToggle.setAttribute('aria-label', '收起对话');
+            setTimeout(() => document.getElementById('user-input').focus(), 80);
+        }
+
+        function closeChatPanel() {
+            chatPanel.hidden = true;
+            chatToggle.setAttribute('aria-expanded', 'false');
+            chatToggle.setAttribute('aria-label', '展开对话');
+        }
+
+        chatToggle.addEventListener('click', () => {
+            if (chatPanel.hidden) openChatPanel();
+            else closeChatPanel();
+        });
+
+        chatClose.addEventListener('click', closeChatPanel);
+
         // document.getElementById('user-input').addEventListener('input', () => { if (idleTimer) clearTimeout(idleTimer); });
 
-        document.getElementById('send-btn').onclick = handleSend;
+        document.getElementById('send-btn').onclick = () => {
+            openChatPanel();
+            handleSend();
+        };
 
-        document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSend(); });
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                openChatPanel();
+                handleSend();
+            }
+        });
 
         let scene, camera, renderer, particles, mouse = new THREE.Vector2(), targetMouse = new THREE.Vector2();
 
@@ -1115,19 +913,6 @@ async function handleFinalQuest(choice) {
         animate(); 
 
         lucide.createIcons();
-
-        function showMemoryWelcome() {
-            const container = document.getElementById('message-container');
-            const history = document.getElementById('chat-history');
-            ["请在左上角上传你的数据", "来开启星河记忆"].forEach((message, index) => {
-                setTimeout(() => {
-                    container.insertAdjacentHTML('beforeend', `<div class="mb-10 ethereal-text"><div class="text-white/20 text-[10px] tracking-[0.4em] uppercase mb-2 center-tracking">星响</div><div class="text-white/60 font-thin text-base tracking-[0.1em] italic mobile-text">${message}</div></div>`);
-                    history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
-                }, index * 900);
-            });
-        }
-
-        setTimeout(showMemoryWelcome, 1200);
 
     </script>
 
